@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Deutsch Lernen | Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{ --bg1:#161d3f; --bg2:#101633; --panel:rgba(255,255,255,.06); --card:rgba(255,255,255,.08); --text:#f5f7ff; --muted:#c7d0ff; --border:rgba(255,255,255,.16); --neon:#ff4b4b; --neon2:#ff8a8a; --ok:#4be38a; }
+*{box-sizing:border-box}
+body{ margin:0; font-family:Inter,sans-serif; background: radial-gradient(900px 600px at 15% 15%, rgba(255,60,60,.45), transparent 60%), linear-gradient(180deg,#1a1022,#12081a); color:var(--text); min-height: 100vh; }
+.login{min-height:100vh; display:flex; align-items:center; justify-content:center;}
+.login .card{width:380px; background:var(--card); padding:28px; border-radius:22px; border:1px solid var(--border); backdrop-filter: blur(10px);}
+input{width:100%; padding:12px; margin-top:10px; border-radius:14px; border:1px solid var(--border); background:rgba(10,14,34,.55); color:#fff; outline: none;}
+.login button{width:100%; margin-top:16px; padding:12px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--neon),var(--neon2)); color:#fff; font-weight:800; cursor:pointer;}
+.app{display:none}
+header{display:flex; justify-content:space-between; align-items:center; padding:18px 22px; background:var(--panel); border-bottom:1px solid var(--border); backdrop-filter: blur(10px);}
+.hero{max-width:900px; margin:34px auto 30px; text-align:center; padding:0 14px;}
+.progressWrap{max-width:460px; margin:18px auto 0;}
+.level-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 800; font-size: 14px; }
+.lvl-badge { background: rgba(255,75,75,0.15); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--neon); color: var(--neon); }
+.lvl-target { color: var(--muted); padding: 4px 10px; }
+.progressBar{height:14px; background:rgba(10,14,34,.55); border-radius:999px; overflow:hidden; border:1px solid var(--border); position: relative;}
+.progressFill{width:0%; height:100%; background:linear-gradient(90deg,var(--neon),var(--neon2)); transition: 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); box-shadow: 0 0 15px var(--neon);}
+.container{max-width:1020px; margin:28px auto 70px; padding:0 18px;}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px;}
+.cardLink{ position: relative; background:var(--card); padding:28px; border-radius:24px; border:1px solid var(--border); text-decoration:none; color:var(--text); text-align:center; transition:.35s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cardLink:hover{transform:translateY(-8px); border-color:var(--neon); background: rgba(255,255,255,0.12);}
+.notif-badge{ position:absolute; top:15px; right:15px; background:var(--neon); color:#fff; min-width:22px; height:22px; border-radius:11px; display:none; align-items:center; justify-content:center; font-size:11px; font-weight:800; }
+.fabRow{position:fixed; right:18px; bottom:18px; display:flex; gap:10px; z-index:99;}
+.fab{padding:12px 25px; border-radius:999px; background:var(--panel); border:1px solid var(--border); color:var(--text); cursor:pointer; backdrop-filter: blur(10px); font-weight: 600;}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <div class="card">
+    <h2 style="margin:0">Willkommen!</h2>
+    <input id="u" placeholder="Kullanıcı adı">
+    <input id="p" type="password" placeholder="Şifre">
+    <div id="err" style="color:var(--neon); margin-top:10px; font-size:14px;"></div>
+    <button onclick="login()">Giriş Yap</button>
+  </div>
+</div>
+
+<div class="app" id="app">
+<header>
+  <div><strong id="welcome" style="font-size:18px">Hoşgeldin</strong></div>
+  <div id="adminBadge" style="display:none; color:var(--ok); font-weight:800; border:1px solid var(--ok); padding:4px 10px; border-radius:8px; font-size:11px;">YÖNETİCİ</div>
+</header>
+
+<section class="hero" id="heroArea">
+  <div class="progressWrap">
+    <div class="level-labels">
+      <span id="currentLevelLabel" class="lvl-badge">---</span>
+      <span id="nextLevelLabel" class="lvl-target">---</span>
+    </div>
+    <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+    <div style="color:var(--muted);font-size:13px;margin-top:8px; font-weight:600;" id="progressText">%0 Tamamlandı</div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="cards">
+    <a href="dersler.html" class="cardLink"><span>📘</span> <strong>Dersler</strong></a>
+    <a href="alistirma.html" class="cardLink"><span>✏️</span> <strong>Alıştırmalar</strong></a>
+    <a href="diziler.html" class="cardLink"><span>🎬</span> <strong>Diziler</strong></a>
+    <a href="analiz.html" class="cardLink"><span>📊</span> <strong>Analiz</strong></a>
+    <a href="asistan.html" class="cardLink"><span>🤖</span> <strong>Asistan</strong></a>
+    <a href="oyunlar.html" class="cardLink"><span>🎮</span> <strong>Oyunlar</strong></a>
+    <a href="mesaj.html" class="cardLink">
+      <span>✉️</span> <strong>Mesajlar</strong>
+      <div id="msgNotif" class="notif-badge">0</div>
+    </a>
+    
+    <a href="admin.html" id="adminLink" class="cardLink" style="display:none; border-color:var(--ok)">
+      <span>⚙️</span> <strong>Öğrenci Yönetimi</strong>
+    </a>
+    <a href="admin-questions.html" id="qAdminLink" class="cardLink" style="display:none; border-color:var(--ok)">
+      <span>📝</span> <strong>Soru Yönetimi</strong>
+    </a>
+    <a href="admin-lessons.html" id="lAdminLink" class="cardLink" style="display:none; border-color:var(--ok)">
+      <span>📚</span> <strong>Ders Yönetimi</strong>
+    </a>
+  </div>
+</div>
+
+<div class="fabRow">
+  <button class="fab" onclick="logout()" style="background:rgba(255,75,75,0.1); border-color:var(--neon)">Çıkış Yap</button>
+</div>
+</div>
+
+<script>
+const KEY_STUDENTS="students_v2", KEY_SESSION="session_student_id", KEY_REPLIES="teacher_replies", KEY_DONE="practice_done", KEY_MSG="student_messages", KEY_LEVELS="student_levels", KEY_RESULTS="practice_results";
+const LEVELS = ["A1.1", "A1.2", "A2.1", "A2.2", "B1.1", "B1.2", "B1.3", "B2.1", "B2.2", "B2.3", "C1.1", "C1.2", "C1.3", "C2"];
+
+function login(){
+  const u=document.getElementById("u").value.trim().toLowerCase();
+  const p=document.getElementById("p").value.trim();
+  if(u === "penumbra" && p === "1145") { localStorage.setItem(KEY_SESSION, "admin"); location.reload(); return; }
+  const students = JSON.parse(localStorage.getItem(KEY_STUDENTS)) || [];
+  const s = students.find(x => x.username === u && x.password === p);
+  if(!s){ document.getElementById("err").textContent="Kullanıcı adı veya şifre hatalı!"; return; }
+  localStorage.setItem(KEY_SESSION, s.id); location.reload();
+}
+
+function checkSession(){
+  const sess = localStorage.getItem(KEY_SESSION);
+  if(!sess) return;
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  
+  if(sess === "admin") {
+    document.getElementById("welcome").textContent = "Master Admin Paneli";
+    document.getElementById("adminBadge").style.display = "block";
+    document.getElementById("adminLink").style.display = "flex";
+    document.getElementById("qAdminLink").style.display = "flex";
+    document.getElementById("lAdminLink").style.display = "flex"; // Yeni ders butonu aktif
+    document.getElementById("heroArea").style.display = "none";
+  } else {
+    const students = JSON.parse(localStorage.getItem(KEY_STUDENTS)) || [];
+    const s = students.find(x => String(x.id) === String(sess));
+    if(s) {
+      document.getElementById("welcome").textContent = "Hoşgeldin, " + s.name;
+      updateProgress(s.id);
+      checkNewMessages(s.id);
+    }
+  }
+}
+
+function updateProgress(studentId) {
+  const doneData = JSON.parse(localStorage.getItem(KEY_DONE)) || {}; 
+  const results = JSON.parse(localStorage.getItem(KEY_RESULTS)) || []; 
+  const levels = JSON.parse(localStorage.getItem(KEY_LEVELS)) || {};
+  
+  const myDone = doneData[studentId] || [];
+  const myResults = results.filter(r => String(r.studentId) === String(studentId));
+  const currentLvl = levels[studentId] || "A1.1";
+
+  // İlerleme puanlama mantığı
+  let lessonPoints = myDone.length * 10;
+  let practicePoints = myResults.filter(r => r.correct).length * 2;
+  let total = Math.min(lessonPoints + practicePoints, 100);
+
+  const currentIndex = LEVELS.indexOf(currentLvl);
+  document.getElementById("currentLevelLabel").textContent = currentLvl;
+  document.getElementById("nextLevelLabel").textContent = LEVELS[currentIndex + 1] || "MAX";
+  document.getElementById("progressFill").style.width = total + "%";
+  document.getElementById("progressText").textContent = "%" + total + " Tamamlandı";
+
+  if(total >= 100) {
+    const NOTIF_SENT_KEY = "notif_sent_" + studentId + "_" + currentLvl;
+    if(!localStorage.getItem(NOTIF_SENT_KEY)) {
+      let msgs = JSON.parse(localStorage.getItem(KEY_MSG)) || [];
+      msgs.push({ 
+        studentId: studentId, 
+        text: `🚩 SEVİYE ONAYI: Barım %100 oldu. ${currentLvl} seviyesini bitirdim, üst seviye onayı bekliyorum!`, 
+        date: new Date().toLocaleString(), 
+        isAuto: true 
+      });
+      localStorage.setItem(KEY_MSG, JSON.stringify(msgs));
+      localStorage.setItem(NOTIF_SENT_KEY, "true");
+      alert("Tebrikler! Bar %100 doldu. Öğretmenine onay bildirimi gönderildi.");
+    }
+  }
+}
+
+function checkNewMessages(studentId) {
+  const replies = JSON.parse(localStorage.getItem(KEY_REPLIES)) || [];
+  const unread = replies.filter(r => String(r.studentId) === String(studentId) && !r.read);
+  if(unread.length > 0) {
+    document.getElementById("msgNotif").style.display = "flex";
+    document.getElementById("msgNotif").textContent = unread.length;
+  }
+}
+
+function logout(){ localStorage.removeItem(KEY_SESSION); location.reload(); }
+checkSession();
+</script>
+</body>
+</html>

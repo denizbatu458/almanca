@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Pro Dil | Alıştırmalar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+ --bg1:#0f172a; --bg2:#020617;
+ --panel:rgba(30,41,59,.7);
+ --border:rgba(255,255,255,.1);
+ --accent:#3b82f6; --accent2:#60a5fa;
+ --ok:#10b981; --danger:#ef4444;
+ --text:#f8fafc; --muted:#94a3b8;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Inter,sans-serif;
+ background:radial-gradient(circle at top right,#1e293b,#020617);
+ color:var(--text);min-height:100vh
+}
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.drawer{
+ width:300px;background:#0f172a;border-right:1px solid var(--border);
+ padding:20px;position:sticky;top:0;height:100vh;overflow:auto
+}
+.unit-title{
+ font-size:11px;letter-spacing:1px;text-transform:uppercase;
+ color:var(--accent2);margin:15px 0 6px;opacity:.7;font-weight:800
+}
+.section-btn{
+ width:100%;padding:12px;border-radius:10px;
+ background:rgba(255,255,255,.04);
+ border:1px solid var(--border);color:#fff;
+ cursor:pointer;margin-bottom:6px;text-align:left;transition: 0.2s;
+}
+.section-btn:hover{background:rgba(59,130,246,.15)}
+.section-btn.active{background:var(--accent);border-color:transparent}
+
+/* CONTENT AREA */
+.content{flex:1;padding:40px;display:flex;justify-content:center;align-items:center;}
+.wrap{
+ width:100%;max-width:700px;
+ background:var(--panel);border-radius:28px;
+ padding:40px;border:1px solid var(--border);
+ backdrop-filter: blur(10px);
+ box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+
+.option-grid { display:grid; gap:12px; margin-top:30px; }
+.progress-bar { height:6px; background:var(--ok); border-radius:10px; margin-bottom:25px; transition:0.4s; }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+    <div class="drawer">
+        <div id="userLvl" style="margin-bottom:15px; font-weight:800; color:var(--accent2); font-size:14px;"></div>
+        <div id="sidebarMenu"></div>
+        <div style="margin-top:20px">
+            <button class="section-btn" style="border-color:var(--danger); color:var(--danger); text-align:center" onclick="location.href='index.html'">🏠 Ana Panel</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="wrap" id="mainDisplay">
+            <div style="text-align:center;padding:60px">
+                <div style="font-size:60px;margin-bottom:20px">📖</div>
+                <h2>Öğrenmeye Başla</h2>
+                <p style="color:var(--muted)">Çalışmak istediğin üniteyi ve bölümü soldaki menüden seçebilirsin.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===== VERİ ANAHTARLARI ===== */
+const DB_KEY="PRO_DIL_DATA_V6";
+const SESSION_KEY="session_student_id";
+const LEVELS_KEY="student_levels";
+const DONE_KEY="practice_done";
+
+/* ===== STATE (DURUM) ===== */
+let bank = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+const sessId = localStorage.getItem(SESSION_KEY);
+const levels = JSON.parse(localStorage.getItem(LEVELS_KEY)) || {};
+const userLevel = levels[sessId] || "A1.1";
+
+// Seviye bilgisini göster
+document.getElementById("userLvl").textContent = "Mevcut Seviye: " + userLevel;
+
+/* ===== MENÜYÜ OLUŞTUR ===== */
+function renderSidebar(){
+    const menu = document.getElementById("sidebarMenu");
+    const done = JSON.parse(localStorage.getItem(DONE_KEY)) || {};
+    const myDone = done[sessId] || [];
+    const map = {};
+
+    menu.innerHTML = "";
+
+    // Sadece öğrencinin seviyesindeki soruları filtrele
+    const filteredQuestions = bank.filter(q => q.level === userLevel);
+
+    if(filteredQuestions.length === 0) {
+        menu.innerHTML = `<div style="font-size:12px; color:var(--muted); padding:10px;">Bu seviye için henüz soru eklenmemiş.</div>`;
+        return;
+    }
+
+    filteredQuestions.forEach(q => {
+        if(!map[q.unit]) map[q.unit] = new Set();
+        map[q.unit].add(q.section);
+    });
+
+    for(const u in map){
+        menu.innerHTML += `<div class="unit-title">${u}</div>`;
+        map[u].forEach(s => {
+            const key = u + "||" + s;
+            const isCompleted = myDone.includes(key);
+            menu.innerHTML += `
+                <button class="section-btn ${isCompleted ? 'completed' : ''}" onclick="loadLesson('${u}','${s}',this)">
+                    ${isCompleted ? '✅ ' : ''}${s}
+                </button>`;
+        });
+    }
+}
+
+/* ===== SORU ÇÖZME MANTIĞI ===== */
+let currentLesson = [], step = 0, activeKey = "";
+
+function loadLesson(u, s, btn){
+    document.querySelectorAll(".section-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    
+    activeKey = u + "||" + s;
+    currentLesson = bank.filter(q => q.unit === u && q.section === s && q.level === userLevel);
+    step = 0;
+    renderStep();
+}
+
+function renderStep(){
+    const box = document.getElementById("mainDisplay");
+    if(step >= currentLesson.length) { finish(); return; }
+
+    const q = currentLesson[step];
+    const options = q.options.split(",");
+
+    box.innerHTML = `
+        <div class="progress-bar" style="width:${(step/currentLesson.length)*100}%"></div>
+        <div style="font-size:14px; color:var(--accent2); font-weight:600; margin-bottom:10px;">Soru ${step + 1} / ${currentLesson.length}</div>
+        <h2 style="line-height:1.4; margin:0;">${q.question}</h2>
+        
+        <div class="option-grid">
+            ${options.map(o => `
+                <button class="section-btn" style="margin:0; background:rgba(255,255,255,.07)" onclick="answer('${o.trim().replace(/'/g, "\\'")}')">
+                    ${o.trim()}
+                </button>
+            `).join("")}
+        </div>
+    `;
+}
+
+function answer(v){
+    const q = currentLesson[step];
+    if(v.toLowerCase() === q.answer.toLowerCase()){
+        step++; 
+        renderStep();
+    } else {
+        alert("❌ Yanlış Cevap, lütfen tekrar düşün.");
+    }
+}
+
+function finish(){
+    // İlerlemeyi kaydet
+    const done = JSON.parse(localStorage.getItem(DONE_KEY)) || {};
+    if(!done[sessId]) done[sessId] = [];
+    if(!done[sessId].includes(activeKey)){
+        done[sessId].push(activeKey);
+        localStorage.setItem(DONE_KEY, JSON.stringify(done));
+    }
+
+    document.getElementById("mainDisplay").innerHTML = `
+        <div style="text-align:center;padding:40px">
+            <div style="font-size:70px; margin-bottom:20px">🏆</div>
+            <h2 style="color:var(--ok)">Harika İş Çıkardın!</h2>
+            <p style="color:var(--muted)">Bu bölümü başarıyla tamamladın.</p>
+            <button class="section-btn" style="text-align:center; background:var(--accent); margin-top:20px;" onclick="location.reload()">Diğer Bölümlere Bak</button>
+        </div>`;
+}
+
+// Başlangıçta menüyü yükle
+renderSidebar();
+</script>
+
+</body>
+</html>

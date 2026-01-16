@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Mini Dizi | Deutsch Lernen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+body{
+  margin:0;font-family:Inter;
+  background:linear-gradient(180deg,#161d3f,#101633);
+  color:#fff;
+}
+header{padding:18px;border-bottom:1px solid rgba(255,255,255,.15)}
+.grid{
+  max-width:900px;
+  margin:30px auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:20px;
+  padding:0 16px;
+}
+.card{
+  background:rgba(255,255,255,.08);
+  border-radius:22px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,.18);
+}
+.card h3{margin:0 0 6px}
+small{color:#c7d0ff}
+</style>
+</head>
+<body>
+
+<header>
+  <strong>🎬 Mini Diziler</strong>
+  <div style="font-size:13px;color:#c7d0ff">Günlük konuşma diyalogları</div>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <h3>Bölüm 1</h3>
+    <small>Kafede Tanışma</small>
+  </div>
+  <div class="card">
+    <h3>Bölüm 2</h3>
+    <small>Ev Arkadaşları</small>
+  </div>
+  <div class="card">
+    <h3>Bölüm 3</h3>
+    <small>Alışveriş</small>
+  </div>
+</div>
+
+<div style="text-align:center;margin:20px">
+  <a href="index.html" style="color:#ff8a8a">← Ana Sayfa</a>
+</div>
+<script>
+const isAdmin = localStorage.getItem("is_admin_active") === "true";
+if(isAdmin) {
+   console.log("Admin modu aktif: İçerik düzenleme butonlarını göster.");
+   // Eğer varsa "Kelime Ekle" butonu .style.display = 'block' yapılır.
+}
+</script>
+</body>
+</html>

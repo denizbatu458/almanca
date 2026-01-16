@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Penumbra | Master Admin V3.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{ --bg:#020617; --sidebar:#0f172a; --card:#1e293b; --accent:#ff4b4b; --ok:#10b981; --border:rgba(255,255,255,0.1); --text:#f8fafc; --muted:#94a3b8; --info:#3b82f6; --danger:#ef4444; }
+*{box-sizing:border-box}
+body{ margin:0; font-family:Inter,sans-serif; background:var(--bg); color:var(--text); display: flex; height: 100vh; overflow:hidden;}
+
+/* Sidebar */
+.sidebar{ width: 300px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px;}
+.box{ background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; }
+h3{ font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-top: 0; margin-bottom: 10px; }
+
+/* Main */
+.main-content{ flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+
+/* Messenger */
+.messenger-area { display: grid; grid-template-columns: 240px 1fr; height: 450px; background: #0a0f1e; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; flex-shrink: 0;}
+.messenger-list { background: rgba(15, 23, 42, 0.5); border-right: 1px solid var(--border); overflow-y: auto; }
+.student-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
+.student-item.active { border-left: 4px solid var(--accent); background: rgba(255,75,75,0.1); }
+.chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.msg-bubble { max-width: 75%; padding: 10px 15px; border-radius: 15px; font-size: 14px; word-wrap: break-word; }
+.msg-student { align-self: flex-start; background: var(--card); border-bottom-left-radius: 2px; }
+.msg-teacher { align-self: flex-end; background: var(--info); border-bottom-right-radius: 2px; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { text-align: left; color: var(--muted); font-size: 11px; padding: 10px; border-bottom: 1px solid var(--border); }
+td { padding: 12px 10px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+/* Form & Buttons */
+input, select{ width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: #fff; outline:none; font-size: 13px;}
+.btn{ padding: 10px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-block { width: 100%; }
+.btn-primary{ background: var(--accent); color: #fff; }
+.btn-sm { padding: 5px 10px; font-size: 11px; margin-right: 5px; }
+.btn-danger { background: var(--danger); color: white; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 style="color:var(--accent); margin:0">⚡ Admin</h2>
+    
+    <div class="box">
+        <h3>Öğrenci Ekle</h3>
+        <input id="sName" placeholder="Ad Soyad">
+        <input id="sUser" placeholder="Kullanıcı Adı">
+        <input id="sPass" type="password" placeholder="Şifre">
+        <select id="sLevel">
+            <option>A1.1</option><option>A1.2</option><option>A2.1</option>
+            <option>B1.1</option><option>B2.1</option><option>C1.1</option>
+        </select>
+        <button class="btn btn-primary btn-block" onclick="addStudent()">Kaydet</button>
+    </div>
+
+    <div class="box">
+        <h3>🔔 Talepler</h3>
+        <div id="notifArea" style="font-size: 12px;">Talep yok.</div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="messenger-area">
+        <div class="messenger-list" id="messengerList"></div>
+        <div style="display:flex; flex-direction:column; background:#020617">
+            <div id="chatHeader" style="padding:15px; background: var(--sidebar); font-weight:bold; border-bottom:1px solid var(--border)">Öğrenci Seçin</div>
+            <div class="chat-messages" id="chatStream"></div>
+            <div style="padding:15px; display:flex; gap:10px; background:var(--sidebar)">
+                <input id="msgText" placeholder="Mesaj yazın..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="btn btn-primary" style="width:100px" onclick="sendMessage()">Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="box">
+        <h3>👥 Kayıtlı Öğrenci Yönetimi</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>AD SOYAD</th>
+                    <th>KULLANICI ADI</th>
+                    <th>SEVİYE</th>
+                    <th>İŞLEMLER</th>
+                </tr>
+            </thead>
+            <tbody id="fullStudentList"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const KEY_STUDENTS="students_v2", KEY_LEVELS="student_levels", KEY_REPLIES="teacher_replies", KEY_MSG="student_messages", 
+      LEVELS = ["A1.1","A1.2","A2.1","A2.2","B1.1","B1.2","B1.3","B2.1","B2.2","B2.3","C1.1","C1.2","C2"];
+
+let selectedStudentId = null;
+
+function addStudent() {
+    const name = document.getElementById("sName").value;
+    const user = document.getElementById("sUser").value;
+    const pass = document.getElementById("sPass").value;
+    if(!name || !user) return alert("Eksik bilgi!");
+
+    let students = JSON.parse(localStorage.getItem(KEY_STUDENTS)) || [];
+    const id = String(Date.now());
+    students.push({id, name, username:user, password:pass});
+    localStorage.setItem(KEY_STUDENTS, JSON.stringify(students));
+
+    let levels = JSON.parse(localStorage.getItem(KEY_LEVELS)) || {};
+    levels[id] = document.getElementById("sLevel").value;
+    localStorage.setItem(KEY_LEVELS, JSON.stringify(levels));
+
+    renderAll();
+    ["sName","sUser","sPass"].forEach(i => document.getElementById(i).value = "");
+}
+
+function sendMessage() {
+    const txt = document.getElementById("msgText").value;
+    if(!selectedStudentId || !txt.trim()) return;
+    let r = JSON.parse(localStorage.getItem(KEY_REPLIES)) || [];
+    r.push({ studentId: String(selectedStudentId), text: txt.trim(), date: new Date().toISOString() });
+    localStorage.setItem(KEY_REPLIES, JSON.stringify(r));
+    document.getElementById("msgText").value = "";
+    renderAll();
+}
+
+function approveLevel(sid) {
+    let lvls = JSON.parse(localStorage.getItem(KEY_LEVELS)) || {};
+    let idx = LEVELS.indexOf(lvls[sid] || "A1.1");
+    if(idx < LEVELS.length - 1) {
+        lvls[sid] = LEVELS[idx + 1];
+        localStorage.setItem(KEY_LEVELS, JSON.stringify(lvls));
+        let msgs = JSON.parse(localStorage.getItem(KEY_MSG)) || [];
+        localStorage.setItem(KEY_MSG, JSON.stringify(msgs.filter(m => !(m.studentId == sid && m.isAuto))));
+        renderAll();
+    }
+}
+
+function manualLevel(sid) {
+    const n = prompt("Yeni Seviye (Örn: B1.1):");
+    if(n) {
+        let l = JSON.parse(localStorage.getItem(KEY_LEVELS)) || {};
+        l[sid] = n.toUpperCase();
+        localStorage.setItem(KEY_LEVELS, JSON.stringify(l));
+        renderAll();
+    }
+}
+
+function deleteStudent(sid) {
+    if(confirm("Öğrenciyi silmek istediğine emin misin?")) {
+        let s = JSON.parse(localStorage.getItem(KEY_STUDENTS)) || [];
+        localStorage.setItem(KEY_STUDENTS, JSON.stringify(s.filter(x => x.id != sid)));
+        renderAll();
+    }
+}
+
+function renderAll() {
+    const students = JSON.parse(localStorage.getItem(KEY_STUDENTS)) || [];
+    const lvls = JSON.parse(localStorage.getItem(KEY_LEVELS)) || {};
+    const msgs = JSON.parse(localStorage.getItem(KEY_MSG)) || [];
+    const replies = JSON.parse(localStorage.getItem(KEY_REPLIES)) || [];
+
+    // Mesaj Listesi (Sol)
+    document.getElementById("messengerList").innerHTML = students.map(s => `
+        <div class="student-item ${selectedStudentId == s.id ? 'active' : ''}" onclick="selectedStudentId='${s.id}'; renderAll();">
+            <div style="font-weight:bold">${s.name}</div>
+            <div style="font-size:11px; opacity:0.6">${lvls[s.id] || 'A1.1'}</div>
+        </div>`).join('');
+
+    // Mesaj Akışı (Orta)
+    if(selectedStudentId) {
+        document.getElementById("chatHeader").innerText = "💬 " + (students.find(x=>x.id == selectedStudentId)||{}).name;
+        let flow = [...msgs.filter(m => String(m.studentId) === String(selectedStudentId) && !m.isAuto),
+                    ...replies.filter(r => String(r.studentId) === String(selectedStudentId))].sort((a,b) => new Date(a.date) - new Date(b.date));
+        document.getElementById("chatStream").innerHTML = flow.map(f => `<div class="msg-bubble ${f.studentId && !f.hasOwnProperty('date') ? 'msg-student' : (f.hasOwnProperty('date') && !f.hasOwnProperty('studentId') ? 'msg-teacher' : 'msg-student')}">${f.text}</div>`).join('');
+        document.getElementById("chatStream").scrollTop = 99999;
+    }
+
+    // Full Tablo (Alt)
+    document.getElementById("fullStudentList").innerHTML = students.map(s => `
+        <tr>
+            <td><b>${s.name}</b></td>
+            <td><code>${s.username}</code></td>
+            <td><span style="color:var(--info)">${lvls[s.id] || 'A1.1'}</span></td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="manualLevel('${s.id}')">Seviye Değiştir</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStudent('${s.id}')">Sil</button>
+            </td>
+        </tr>`).join('');
+
+    // Talepler (Sol)
+    const auto = msgs.filter(m => m.isAuto === true);
+    document.getElementById("notifArea").innerHTML = auto.map(n => {
+        const s = students.find(x=>x.id == n.studentId);
+        return `<div class="box" style="margin-bottom:5px; background:rgba(0,0,0,0.2)">
+            <b>${s?s.name:'Öğrenci'}</b> seviye istiyor.
+            <button class="btn btn-primary btn-sm" style="width:100%; margin-top:5px" onclick="approveLevel('${n.studentId}')">Onayla</button>
+        </div>`;
+    }).join('') || "Talep yok.";
+}
+
+renderAll();
+setInterval(renderAll, 4000);
+</script>
+</body>
+</html>
