@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Admin Paneli – Öğrenci ve Mesaj Yönetimi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#161d3f;
+  --bg2:#101633;
+  --panel:rgba(255,255,255,.06);
+  --card:rgba(255,255,255,.08);
+  --text:#f5f7ff;
+  --muted:#c7d0ff;
+  --border:rgba(255,255,255,.16);
+  --accent:#ff4b4b;
+  --accent2:#ff8a8a;
+  --ok:#4be38a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,system-ui,sans-serif;
+  background: linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  min-height: 100vh;
+}
+
+/* GİRİŞ VE PANEL DÜZENİ */
+.login,.panel{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.panel{display:none;align-items:flex-start;justify-content:flex-start;flex-direction: column;}
+
+.card{
+  background:var(--card);
+  padding:26px;
+  width:380px;
+  border-radius:22px;
+  border:1px solid var(--border);
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+header{
+  width:100%;
+  padding:18px 22px;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  text-align: center;
+}
+
+.container{max-width:1000px;margin:0 auto;padding:20px;width:100%;}
+
+.box{
+  background:var(--card);
+  padding:20px;
+  border-radius:20px;
+  margin-bottom:18px;
+  border:1px solid var(--border);
+}
+
+/* FORMLAR VE TABLOLAR */
+input, select, textarea {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(10,14,34,.55);
+  color:var(--text);
+  outline:none;
+}
+
+button{
+  width:100%;
+  margin-top:16px;
+  padding:12px;
+  border-radius:14px;
+  border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;font-size:14px;}
+th{color:var(--muted);font-weight:600}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.row>*{flex:1;min-width:200px;}
+
+/* MESAJ STİLLERİ */
+.msg{
+  padding:16px;border-radius:16px;
+  background:rgba(10,14,34,.45);
+  border:1px solid var(--border);
+  margin-bottom:12px;
+}
+.replyArea{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;}
+.replyArea textarea{flex:1;height:80px;margin-top:0;}
+
+.smallBtn{
+  width: auto; padding:8px 12px; border-radius:10px; font-size:12px; margin-top:0;
+}
+.smallBtn.ok{background: var(--ok); color:#062014;}
+.smallBtn.danger{background: var(--accent);}
+
+.logoutBtn{
+  position: fixed; bottom: 20px; right: 20px; width: auto; 
+  background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+}
+</style>
+</head>
+
+<body>
+
+<div class="login" id="login">
+  <div class="card">
+    <h2>Admin Giriş</h2>
+    <input id="adminUser" placeholder="Kullanıcı adı">
+    <input id="adminPass" type="password" placeholder="Şifre">
+    <div id="err" style="color:#ff8a8a; margin-top:10px"></div>
+    <button type="button" id="loginBtn">Giriş Yap</button>
+  </div>
+</div>
+
+<div class="panel" id="panel">
+  <header>
+    <strong>Admin Paneli</strong>
+    <div style="color:var(--muted);font-size:13px;">Öğrenci Yönetimi ve Mesajlar</div>
+  </header>
+
+  <div class="container">
+
+    <div class="box">
+      <h3>➕ Öğrenci Ekle</h3>
+      <div class="row">
+        <input id="studentName" placeholder="Ad Soyad">
+        <input id="studentUsername" placeholder="Kullanıcı adı">
+      </div>
+      <div class="row">
+        <input id="studentPassword" placeholder="Şifre">
+        <select id="studentLevel">
+          <option>A1</option><option>A2</option>
+          <option>B1</option><option>B2</option>
+          <option>C1</option><option>C2</option>
+        </select>
+      </div>
+      <button type="button" onclick="addStudent()">Öğrenciyi Kaydet</button>
+      <div id="addErr" style="color:#ff8a8a; margin-top:10px"></div>
+    </div>
+
+    <div class="box">
+      <h3>👥 Kayıtlı Öğrenciler</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Ad Soyad</th><th>Kullanıcı</th><th>Seviye</th><th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="studentList"></tbody>
+      </table>
+    </div>
+
+    <div class="box">
+      <h3>📩 Öğrenci Mesajları</h3>
+      <div id="messages"></div>
+    </div>
+
+  </div>
+  
+  <button class="logoutBtn" onclick="logout()">Oturumu Kapat</button>
+</div>
+
+<script>
+const ADMIN_USER="admin";
+const ADMIN_PASS="admin123";
+const KEY_ADMIN="admin_session";
+const KEY_STUDENTS="students_v2";
+const KEY_MSG="teacher_messages";
+const KEY_REPLIES="teacher_replies_v1";
+
+// Auth Kontrol
+document.getElementById("loginBtn").onclick = () => {
+  if(document.getElementById("adminUser").value === ADMIN_USER && 
+     document.getElementById("adminPass").value === ADMIN_PASS){
+    localStorage.setItem(KEY_ADMIN,"1");
+    showPanel();
+  } else {
+    document.getElementById("err").textContent="Hatalı bilgiler.";
+  }
+};
+
+function showPanel(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("panel").style.display="flex";
+  renderStudents();
+  renderMessages();
+}
+
+function logout(){
+  localStorage.removeItem(KEY_ADMIN);
+  location.reload();
+}
+
+if(localStorage.getItem(KEY_ADMIN)) showPanel();
+
+// ÖĞRENCİ İŞLEMLERİ
+function getStudents() { return JSON.parse(localStorage.getItem(KEY_STUDENTS)) || []; }
+
+function addStudent(){
+  const name = document.getElementById("studentName").value.trim();
+  const user = document.getElementById("studentUsername").value.trim().toLowerCase();
+  const pass = document.getElementById("studentPassword").value.trim();
+  const lvl  = document.getElementById("studentLevel").value;
+
+  if(!name || !user || !pass) return alert("Tüm alanları doldurun.");
+
+  const students = getStudents();
+  if(students.some(s => s.username === user)) return alert("Bu kullanıcı adı zaten var.");
+
+  students.push({ id: Date.now(), name, username: user, password: pass, level: lvl });
+  localStorage.setItem(KEY_STUDENTS, JSON.stringify(students));
+  
+  document.getElementById("studentName").value = "";
+  document.getElementById("studentUsername").value = "";
+  document.getElementById("studentPassword").value = "";
+  renderStudents();
+}
+
+function renderStudents(){
+  const tbody = document.getElementById("studentList");
+  tbody.innerHTML = "";
+  getStudents().forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${s.name}</td>
+      <td>${s.username}</td>
+      <td>${s.level}</td>
+      <td><button class="smallBtn danger" onclick="removeStudent(${s.id})">Sil</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function removeStudent(id){
+  const filtered = getStudents().filter(s => s.id !== id);
+  localStorage.setItem(KEY_STUDENTS, JSON.stringify(filtered));
+  renderStudents();
+}
+
+// MESAJ İŞLEMLERİ
+function renderMessages(){
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+  const msgs = JSON.parse(localStorage.getItem(KEY_MSG)) || [];
+  const replies = JSON.parse(localStorage.getItem(KEY_REPLIES)) || [];
+
+  if(!msgs.length) { box.innerHTML = "<small>Mesaj bulunamadı.</small>"; return; }
+
+  msgs.slice().reverse().forEach((m, idx) => {
+    const realIdx = msgs.length - 1 - idx;
+    const sKey = String(m.studentId || m.username || "");
+    const lastRep = replies.filter(r => r.studentKey === sKey).pop();
+
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.innerHTML = `
+      <strong>${m.name || m.from}</strong> <small>(${m.level || ""})</small>
+      <div style="margin:8px 0;">${m.text}</div>
+      <div style="font-size:11px; color:var(--ok)">${lastRep ? "Son Yanıtınız: " + lastRep.text : "Yanıtlanmadı"}</div>
+      <div class="replyArea">
+        <textarea id="rep_${realIdx}" placeholder="Cevabınız..."></textarea>
+        <button class="smallBtn ok" onclick="sendReply(${realIdx})">Gönder</button>
+        <button class="smallBtn danger" onclick="deleteMsg(${realIdx})">Sil</button>
+      </div>
+    `;
+    box.appendChild(div);
+  });
+}
+
+function sendReply(idx){
+  const msgs = JSON.parse(localStorage.getItem(KEY_MSG));
+  const text = document.getElementById("rep_"+idx).value.trim();
+  if(!text) return;
+
+  const replies = JSON.parse(localStorage.getItem(KEY_REPLIES)) || [];
+  replies.push({
+    studentKey: String(msgs[idx].studentId || msgs[idx].username),
+    text: text,
+    date: new Date().toLocaleString()
+  });
+  localStorage.setItem(KEY_REPLIES, JSON.stringify(replies));
+  alert("Yanıt gönderildi.");
+  renderMessages();
+}
+
+function deleteMsg(idx){
+  const msgs = JSON.parse(localStorage.getItem(KEY_MSG));
+  msgs.splice(idx, 1);
+  localStorage.setItem(KEY_MSG, JSON.stringify(msgs));
+  renderMessages();
+}
+</script>
+</body>
+</html>
