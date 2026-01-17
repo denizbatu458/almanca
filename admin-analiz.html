@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Deutsch Pro | Premium Analiz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+:root {
+    --bg: #0f172a; /* Modern Slate Dark */
+    --card: rgba(30, 41, 59, 0.7);
+    --border: rgba(148, 163, 184, 0.1);
+    --primary: #6366f1; /* Indigo */
+    --accent: #0ea5e9; /* Sky Blue */
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --ok: #10b981;
+    --grad: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%);
+}
+
+* { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+body {
+    margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                      radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.1) 0px, transparent 50%);
+}
+
+header {
+    padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
+    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+}
+
+.container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+
+/* Modern Kontrol Merkezi */
+.admin-toolbar {
+    background: var(--card); border: 1px solid var(--primary);
+    padding: 25px; border-radius: 24px; margin-bottom: 30px;
+    display: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.toolbar-grid { display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 15px; margin-top: 15px; }
+
+input, select {
+    background: rgba(15, 23, 42, 0.5); border: 1px solid var(--border);
+    color: white; padding: 12px 18px; border-radius: 14px; font-size: 14px;
+}
+input:focus { outline: none; border-color: var(--primary); background: rgba(15, 23, 42, 0.8); }
+
+/* Premium Kart Tasarımı */
+.main-card {
+    background: var(--card); border-radius: 32px; padding: 40px;
+    border: 1px solid var(--border); backdrop-filter: blur(10px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.profile-section {
+    display: flex; align-items: center; gap: 30px; margin-bottom: 40px;
+}
+
+.avatar { 
+    width: 120px; height: 120px; border-radius: 35px; object-fit: cover; 
+    border: 2px solid var(--primary); box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+}
+
+/* Şık İstatistikler */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+.stat-card {
+    background: rgba(15, 23, 42, 0.4); padding: 25px; border-radius: 24px;
+    border: 1px solid var(--border); text-align: center; position: relative; overflow: hidden;
+}
+.stat-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--grad);
+}
+.stat-card b { display: block; font-size: 42px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-card span { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Rozetler */
+.badge-flex { display: flex; flex-wrap: wrap; gap: 10px; }
+.badge-premium {
+    background: rgba(99, 102, 241, 0.1); color: var(--primary);
+    padding: 10px 18px; border-radius: 14px; font-size: 13px; font-weight: 700;
+    border: 1px solid rgba(99, 102, 241, 0.2); display: flex; align-items: center; gap: 8px;
+}
+.badge-del { cursor: pointer; color: #f87171; font-size: 18px; }
+
+/* Ünite Performansı */
+.unit-item { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--border); }
+.u-label { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 10px; font-size: 14px; }
+.u-track { height: 8px; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; }
+.u-bar { height: 100%; background: var(--grad); border-radius: 10px; box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+
+/* Butonlar */
+.btn-main {
+    background: var(--grad); color: white; padding: 15px 30px; border-radius: 16px;
+    border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
+}
+.btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
+
+/* PDF Alt Bilgi */
+#pdfFooter { display: flex; justify-content: space-between; margin-top: 50px; padding-top: 30px; border-top: 1px solid var(--border); }
+
+@media (max-width: 768px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .toolbar-grid { grid-template-columns: 1fr; }
+    .profile-section { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div style="background:var(--grad); width:40px; height:40px; border-radius:12px; display:grid; place-items:center; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);">
+            <span style="font-weight:900; color:white;">D</span>
+        </div>
+        <strong style="font-size:20px; letter-spacing:-0.5px;">DEUTSCH <span style="color:var(--primary)">PRO</span></strong>
+    </div>
+    <button onclick="location.href='index.html'" style="background:var(--card); border:1px solid var(--border); color:white; padding:10px 20px; border-radius:14px; cursor:pointer; font-weight:600;">Geri Dön</button>
+</header>
+
+<div class="container">
+
+    <div id="adminPanel" class="admin-toolbar">
+        <div style="font-weight:700; margin-bottom:15px; color:var(--accent); display:flex; align-items:center; gap:8px;">
+            <span>🛡️</span> Yönetici Kontrol Paneli
+        </div>
+        <div class="toolbar-grid">
+            <select id="studentSelect" onchange="loadAnalysis(this.value)">
+                <option value="">Öğrenci Seçiniz</option>
+            </select>
+            <input type="text" id="newBadgeInp" placeholder="Yeni Rozet Başlığı...">
+            <button onclick="addBadge()" style="background:var(--grad); border:none; color:white; font-weight:700; border-radius:14px; cursor:pointer;">Rozet Tanımla</button>
+        </div>
+    </div>
+
+    <button class="btn-main" style="margin-bottom:30px;" onclick="generatePDF()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        Resmi Performans Karnesi (PDF)
+    </button>
+
+    <div id="reportContent" class="main-card">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:50px;">
+            <div>
+                <h4 style="color:var(--primary); margin:0; text-transform:uppercase; letter-spacing:2px;">Öğrenci Analiz Raporu</h4>
+                <div id="currentDate" style="color:var(--muted); font-size:14px; margin-top:5px;"></div>
+            </div>
+            <div style="text-align:right">
+                <div style="font-weight:800; font-size:24px;">DEUTSCH PRO</div>
+                <div style="color:var(--muted); font-size:12px;">ACADEMY VERIFIED</div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <img id="avatar" class="avatar" src="">
+            <div>
+                <h1 id="displayName" style="margin:0; font-size:36px; letter-spacing:-1px;">---</h1>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                    <span style="color:var(--ok); font-weight:700; font-size:14px;">● AKTİF ANALİZ</span>
+                    <input type="file" id="fileInp" hidden onchange="setAvatar(this)">
+                    <button id="upBtn" onclick="fileInp.click()" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:13px; font-weight:600;">Fotoğrafı Değiştir</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><span>Soru Sayısı</span><b id="tSolved">0</b></div>
+            <div class="stat-card"><span>Doğru Cevap</span><b id="tCorrect">0</b></div>
+            <div class="stat-card"><span>Başarı Puanı</span><b id="tRate">%0</b></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
+            <div>
+                <h3 style="font-size:18px; margin-bottom:25px; display:flex; align-items:center; gap:10px;">📊 Ünite İlerleme</h3>
+                <div id="unitBox"></div>
+            </div>
+            <div>
+                <h3 style="font-size:18px; margin-bottom:25px; display:flex; align-items:center; gap:10px;">🏅 Kazanımlar</h3>
+                <div id="badgeBox" class="badge-flex"></div>
+            </div>
+        </div>
+
+        <div id="pdfFooter">
+            <div>
+                <div style="color:var(--muted); font-size:11px; margin-bottom:40px;">Sertifika No: DE-PRO-2026</div>
+                <div style="border-top:1px solid var(--border); width:180px; padding-top:10px; font-size:12px; font-weight:600;">KURUM MÜHÜRÜ</div>
+            </div>
+            <div style="text-align:center">
+                <div style="font-style:italic; color:var(--muted); margin-bottom:40px; font-size:12px;">Dijital olarak onaylanmıştır.</div>
+                <div style="border-top:1px solid var(--border); width:180px; padding-top:10px; font-size:12px; font-weight:600;">DİREKTÖR İMZASI</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const sessionID = localStorage.getItem("session_student_id");
+let currentViewID = "";
+
+function init() {
+    if (!sessionID) { location.href = "index.html"; return; }
+    document.getElementById("currentDate").textContent = new Date().toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
+    
+    if (sessionID === "admin") {
+        document.getElementById("adminPanel").style.display = "block";
+        document.getElementById("upBtn").style.display = "none";
+        fillStudentSelect();
+    } else {
+        loadAnalysis(sessionID);
+    }
+}
+
+function fillStudentSelect() {
+    const students = JSON.parse(localStorage.getItem("students_v2")) || [];
+    const select = document.getElementById("studentSelect");
+    students.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id; opt.textContent = s.name;
+        select.appendChild(opt);
+    });
+}
+
+function loadAnalysis(targetSid) {
+    if (!targetSid) return;
+    currentViewID = targetSid;
+
+    const students = JSON.parse(localStorage.getItem("students_v2")) || [];
+    const user = students.find(x => String(x.id) === String(targetSid));
+    document.getElementById("displayName").textContent = user ? user.name : "Öğrenci";
+
+    const results = (JSON.parse(localStorage.getItem("practice_results")) || []).filter(r => String(r.studentId) === String(targetSid));
+    const solved = results.length;
+    const correct = results.filter(r => r.correct).length;
+    const rate = solved ? Math.round((correct / solved) * 100) : 0;
+
+    document.getElementById("tSolved").textContent = solved;
+    document.getElementById("tCorrect").textContent = correct;
+    document.getElementById("tRate").textContent = "%" + rate;
+
+    const av = localStorage.getItem("avatar_" + targetSid);
+    document.getElementById("avatar").src = av || `https://ui-avatars.com/api/?name=${user?.name || 'U'}&background=6366f1&color=fff&size=200`;
+
+    renderBadges(targetSid);
+
+    const map = {};
+    results.forEach(r => {
+        if (!map[r.unit]) map[r.unit] = { s: 0, c: 0 };
+        map[r.unit].s++; if (r.correct) map[r.unit].c++;
+    });
+
+    const unitBox = document.getElementById("unitBox");
+    unitBox.innerHTML = Object.keys(map).length ? Object.keys(map).map(u => {
+        const p = Math.round((map[u].c / map[u].s) * 100);
+        return `
+            <div class="unit-item">
+                <div class="u-label"><span>${u}</span><span style="color:var(--accent)">%${p}</span></div>
+                <div class="u-track"><div class="u-bar" style="width:${p}%"></div></div>
+            </div>`;
+    }).join("") : "<p style='color:var(--muted)'>Henüz veri yok.</p>";
+}
+
+function addBadge() {
+    const badgeName = document.getElementById("newBadgeInp").value.trim();
+    if (!currentViewID || !badgeName) return;
+    let all = JSON.parse(localStorage.getItem("manual_badges")) || {};
+    if (!all[currentViewID]) all[currentViewID] = [];
+    all[currentViewID].push(badgeName);
+    localStorage.setItem("manual_badges", JSON.stringify(all));
+    document.getElementById("newBadgeInp").value = "";
+    renderBadges(currentViewID);
+}
+
+function renderBadges(targetSid) {
+    const all = JSON.parse(localStorage.getItem("manual_badges")) || {};
+    const my = all[targetSid] || [];
+    const isAdmin = (sessionID === "admin");
+    document.getElementById("badgeBox").innerHTML = my.map((b, i) => `
+        <div class="badge-premium">
+            🏆 ${b}
+            ${isAdmin ? `<span class="badge-del" onclick="deleteBadge('${targetSid}', ${i})">×</span>` : ''}
+        </div>
+    `).join("") || "<p style='color:var(--muted)'>Rozet bulunmuyor.</p>";
+}
+
+function deleteBadge(sid, idx) {
+    let all = JSON.parse(localStorage.getItem("manual_badges")) || {};
+    all[sid].splice(idx, 1);
+    localStorage.setItem("manual_badges", JSON.stringify(all));
+    renderBadges(sid);
+}
+
+async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const element = document.getElementById("reportContent");
+    const canvas = await html2canvas(element, { 
+        scale: 2, 
+        backgroundColor: "#0f172a", // Koyu tema arka planı PDF'e dahil et
+        useCORS: true 
+    });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`DEUTSCH_PRO_REPORT_${document.getElementById("displayName").textContent.toUpperCase()}.pdf`);
+}
+
+function setAvatar(i) {
+    const r = new FileReader();
+    r.onload = () => { localStorage.setItem("avatar_" + currentViewID, r.result); document.getElementById("avatar").src = r.result; }
+    r.readAsDataURL(i.files[0]);
+}
+
+init();
+</script>
+</body>
+</html>

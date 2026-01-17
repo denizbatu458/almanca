@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Admin | Soru Bankası</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#161d3f; --bg2:#101633;
+  --panel:rgba(255,255,255,.06);
+  --card:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.16);
+  --text:#f5f7ff; --muted:#c7d0ff;
+  --neon:#ff4b4b; --neon2:#ff8a8a;
+  --ok:#4be38a; --danger:#ef4444; --info:#3b82f6;
+  --shadow: 0 20px 50px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:Inter,system-ui,sans-serif; color:var(--text);
+  background:
+    radial-gradient(900px 600px at 15% 15%, rgba(255,60,60,.25), transparent 60%),
+    radial-gradient(900px 600px at 85% 25%, rgba(99,102,241,.18), transparent 55%),
+    linear-gradient(180deg,#1a1022,#12081a);
+  min-height:100vh;
+}
+header{
+  position:sticky; top:0; z-index:50;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 18px;
+  background:rgba(10,14,34,.55);
+  border-bottom:1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+.brand{
+  display:flex; align-items:center; gap:10px; font-weight:800;
+}
+.brand .logo{
+  width:38px; height:38px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,var(--neon),var(--neon2));
+  box-shadow: 0 0 18px rgba(255,75,75,.25);
+}
+.top-actions{display:flex; gap:10px; align-items:center;}
+.btn{
+  border:1px solid var(--border);
+  background:var(--panel);
+  color:var(--text);
+  padding:10px 14px;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:800;
+  transition:.25s;
+}
+.btn:hover{transform:translateY(-2px); border-color:rgba(255,255,255,.25)}
+.btn.primary{background:linear-gradient(135deg,var(--neon),var(--neon2)); border-color:transparent}
+.btn.ok{background:rgba(75,227,138,.12); border-color:rgba(75,227,138,.35); color:var(--ok)}
+.btn.danger{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.35); color:#ffb4b4}
+.pill{
+  font-size:11px; font-weight:900; letter-spacing:1.2px;
+  color:var(--muted); text-transform:uppercase;
+  padding:6px 10px; border-radius:999px;
+  border:1px solid var(--border); background:rgba(255,255,255,.04);
+}
+
+/* Layout */
+.app{
+  display:grid;
+  grid-template-columns: 320px 1fr;
+  gap:16px;
+  padding:16px;
+  max-width:1250px;
+  margin:0 auto;
+}
+.sidebar{
+  background:rgba(10,14,34,.35);
+  border:1px solid var(--border);
+  border-radius:22px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+.side-head{
+  padding:16px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.side-body{padding:14px; display:flex; flex-direction:column; gap:14px;}
+.box{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
+}
+.label{font-size:11px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); font-weight:900; margin-bottom:8px}
+.row{display:flex; gap:10px}
+.input, select, textarea{
+  width:100%;
+  background:rgba(10,14,34,.55);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:12px 12px;
+  border-radius:14px;
+  outline:none;
+}
+textarea{min-height:120px; resize:vertical}
+.mini{
+  font-size:12px; color:var(--muted); line-height:1.35;
+}
+
+/* Tree */
+.tree{
+  display:flex; flex-direction:column; gap:10px;
+}
+.tree .lvl{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.05);
+  cursor:pointer;
+  transition:.2s;
+}
+.tree .lvl:hover{border-color:rgba(255,255,255,.28)}
+.tree .lvl.active{
+  border-color:rgba(255,75,75,.65);
+  box-shadow: 0 0 0 3px rgba(255,75,75,.12);
+}
+.small-btn{
+  padding:6px 10px; border-radius:12px;
+  border:1px solid var(--border); background:rgba(255,255,255,.05);
+  color:var(--text); cursor:pointer; font-weight:800; font-size:12px;
+}
+.small-btn:hover{border-color:rgba(255,255,255,.25)}
+.small-btn.danger{border-color:rgba(239,68,68,.35); color:#ffb4b4}
+.small-btn.ok{border-color:rgba(75,227,138,.35); color:var(--ok)}
+
+.units, .sections{
+  display:flex; flex-direction:column; gap:8px;
+  margin-top:8px;
+}
+.node{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  border-radius:14px;
+  cursor:pointer;
+}
+.node:hover{border-color:rgba(255,255,255,.25)}
+.node.active{
+  border-color:rgba(59,130,246,.65);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+}
+.node .title{font-weight:800; font-size:13px}
+.node .sub{font-size:11px; color:var(--muted)}
+
+/* Main */
+.main{
+  background:rgba(10,14,34,.35);
+  border:1px solid var(--border);
+  border-radius:22px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+.main-head{
+  padding:16px;
+  border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+}
+.main-title{display:flex; flex-direction:column; gap:4px}
+.main-title strong{font-size:18px}
+.main-title span{font-size:12px; color:var(--muted)}
+.main-body{
+  display:grid;
+  grid-template-columns: 1fr 420px;
+  gap:16px;
+  padding:16px;
+}
+@media (max-width:1100px){
+  .app{grid-template-columns:1fr}
+  .main-body{grid-template-columns:1fr}
+}
+
+/* Type cards */
+.type-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:10px;
+}
+.type-card{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.05);
+  border-radius:18px;
+  padding:14px;
+  cursor:pointer;
+  transition:.25s;
+  min-height:86px;
+}
+.type-card:hover{transform:translateY(-3px); border-color:rgba(255,255,255,.25)}
+.type-card.active{
+  border-color:rgba(255,75,75,.65);
+  box-shadow: 0 0 0 3px rgba(255,75,75,.12);
+}
+.type-card .t{font-weight:900}
+.type-card .d{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35}
+
+/* Question list (drag & drop) */
+.list{
+  display:flex; flex-direction:column; gap:10px;
+}
+.qitem{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.05);
+  border-radius:18px;
+  padding:12px;
+  display:flex; gap:12px; align-items:flex-start;
+}
+.drag{
+  width:38px; height:38px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border);
+  background:rgba(0,0,0,.25);
+  cursor:grab;
+  user-select:none;
+}
+.qmeta{flex:1}
+.qmeta .head{display:flex; justify-content:space-between; gap:10px; align-items:center}
+.qmeta .head b{font-size:13px}
+.qmeta .head span{font-size:11px; color:var(--muted)}
+.qmeta .preview{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35}
+.qactions{display:flex; gap:8px; margin-top:8px}
+.qactions button{font-size:12px; padding:7px 10px; border-radius:12px}
+
+/* Helper */
+.warn{
+  padding:14px; border-radius:18px;
+  border:1px dashed rgba(255,255,255,.25);
+  color:var(--muted);
+  background:rgba(255,255,255,.04);
+  line-height:1.45;
+}
+hr.sep{border:none; border-top:1px solid var(--border); margin:12px 0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">🧠</div>
+    <div>
+      <div style="font-size:16px;">Soru Bankası</div>
+      <div style="font-size:12px;color:var(--muted);font-weight:700">Ünite • Bölüm • Drag&Drop • Çoklu Soru Tipi</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span class="pill" id="ctxPill">Seçim: -</span>
+    <button class="btn" onclick="location.href='index.html'">🏠 Dashboard</button>
+    <button class="btn primary" onclick="exportJSON()">⬇️ Yedek (JSON)</button>
+    <button class="btn ok" onclick="importJSON()">⬆️ İçe Aktar</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="side-head">
+      <strong>📚 Yapı</strong>
+      <span class="pill" id="countPill">0 soru</span>
+    </div>
+
+    <div class="side-body">
+      <div class="box">
+        <div class="label">Seviye</div>
+        <div class="tree" id="levelList"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Ünite Yönetimi</div>
+        <div class="row">
+          <input class="input" id="newUnitTitle" placeholder="Yeni ünite adı (örn: Ünite 1 - Tanışma)">
+          <button class="small-btn ok" onclick="addUnit()">Ekle</button>
+        </div>
+        <div class="mini">Ünite eklemek için önce seviye seç.</div>
+        <div class="units" id="unitList"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Bölüm Yönetimi</div>
+        <div class="row">
+          <input class="input" id="newSectionTitle" placeholder="Yeni bölüm adı (örn: Bölüm 1 - Kelimeler)">
+          <button class="small-btn ok" onclick="addSection()">Ekle</button>
+        </div>
+        <div class="mini">Bölüm eklemek için ünite seç.</div>
+        <div class="sections" id="sectionList"></div>
+      </div>
+
+      <div class="warn">
+        <b style="color:#fff">Not:</b> Sorular, seçtiğin <b>Seviye → Ünite → Bölüm</b> altında tutulur.  
+        Sıralama <b>drag&drop</b> ile yapılır.
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-head">
+      <div class="main-title">
+        <strong>➕ Soru Ekle</strong>
+        <span>Önce soldan seviye/ünite/bölüm seç. Sonra soru tipini seçip ekle.</span>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn danger" onclick="dangerClearAll()">Tüm Soruları Sil</button>
+      </div>
+    </div>
+
+    <div class="main-body">
+      <!-- Left: list -->
+      <section>
+        <div class="box">
+          <div class="label">Seçili bölümdeki sorular</div>
+          <div id="questionList" class="list"></div>
+        </div>
+      </section>
+
+      <!-- Right: editor -->
+      <section>
+        <div class="box">
+          <div class="label">Soru Tipi</div>
+          <div class="type-grid" id="typeGrid"></div>
+          <hr class="sep">
+          <div class="label">Soru İçeriği</div>
+          <div id="editorArea"></div>
+          <button class="btn primary" style="width:100%;margin-top:12px" onclick="saveQuestion()">Soruyu Kaydet</button>
+          <div class="mini" style="margin-top:10px">
+            İpucu: “___” boşluk işaretidir. Listening/Fill ve Drag/Fill’de cümle içinde kullan.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+/* =======================
+   STORAGE KEYS
+======================= */
+const DB_KEY = "PRO_DIL_DATA_V6";              // soru bankası
+const STRUCT_KEY = "PRO_DIL_STRUCTURE_V1";     // seviye/ünite/bölüm yapısı
+
+/* =======================
+   CONSTANTS
+======================= */
+const LEVELS = ["A1.1","A1.2","A2.1","A2.2","B1.1","B1.2","B1.3","B2.1","B2.2","B2.3","C1.1","C1.2","C1.3","C2"];
+
+const TYPES = [
+  { id:"test",            icon:"✅", title:"Şıklı", desc:"Klasik test (şıklar + doğru cevap)" },
+  { id:"listening_fill",  icon:"🎧", title:"Sesi Dinle → Boşluk Doldur", desc:"Audio + boşluklu cümle + doğru kelime" },
+  { id:"drag_fill",       icon:"🧩", title:"Kelimeleri Yerleştir", desc:"Boşluklara verilen kelimeleri sırayla koy" },
+  { id:"image_match",     icon:"🖼️", title:"Resim–Kelime Eşleştir", desc:"Resimleri kelimelerle eşleştir" }
+];
+
+/* =======================
+   STATE
+======================= */
+let bank = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+let structure = JSON.parse(localStorage.getItem(STRUCT_KEY)) || {}; // { level: { units:[{id,title, sections:[{id,title}]}] } }
+
+let selectedLevel = null;
+let selectedUnitId = null;
+let selectedSectionId = null;
+
+let selectedType = "test";
+let editingId = null; // soru düzenleme
+
+/* =======================
+   INIT STRUCT
+======================= */
+function ensureStructure(){
+  LEVELS.forEach(lv=>{
+    if(!structure[lv]) structure[lv] = { units: [] };
+  });
+  localStorage.setItem(STRUCT_KEY, JSON.stringify(structure));
+}
+ensureStructure();
+
+/* =======================
+   HELPERS
+======================= */
+const uid = (p)=> p + "_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+
+function saveAll(){
+  localStorage.setItem(DB_KEY, JSON.stringify(bank));
+  localStorage.setItem(STRUCT_KEY, JSON.stringify(structure));
+  updateCounters();
+}
+
+function updateCounters(){
+  document.getElementById("countPill").textContent = bank.length + " soru";
+  const ctx = (selectedLevel? selectedLevel:"-") + " / " + (getUnit()?.title || "-") + " / " + (getSection()?.title || "-");
+  document.getElementById("ctxPill").textContent = "Seçim: " + ctx;
+}
+
+function getUnit(){
+  if(!selectedLevel || !selectedUnitId) return null;
+  return (structure[selectedLevel]?.units || []).find(u => u.id === selectedUnitId) || null;
+}
+function getSection(){
+  const u = getUnit();
+  if(!u || !selectedSectionId) return null;
+  return (u.sections || []).find(s => s.id === selectedSectionId) || null;
+}
+
+function toast(msg){
+  alert(msg);
+}
+
+/* =======================
+   RENDER LEFT TREE
+======================= */
+function renderLevels(){
+  const wrap = document.getElementById("levelList");
+  wrap.innerHTML = "";
+  LEVELS.forEach(lv=>{
+    const btn = document.createElement("div");
+    btn.className = "lvl" + (selectedLevel===lv ? " active" : "");
+    btn.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <div style="font-weight:900">${lv}</div>
+        <div style="font-size:11px;color:var(--muted)">Ünite/Bölüm oluştur</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="pill">${(structure[lv]?.units||[]).length} ünite</span>
+      </div>
+    `;
+    btn.onclick = ()=>{
+      selectedLevel = lv;
+      selectedUnitId = null;
+      selectedSectionId = null;
+      editingId = null;
+      renderAll();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function renderUnits(){
+  const wrap = document.getElementById("unitList");
+  wrap.innerHTML = "";
+  if(!selectedLevel){
+    wrap.innerHTML = `<div class="mini">Seviye seçmeden ünite eklenmez.</div>`;
+    return;
+  }
+  const units = structure[selectedLevel].units || [];
+  if(units.length === 0){
+    wrap.innerHTML = `<div class="mini">Henüz ünite yok. Yukarıdan ekle.</div>`;
+    return;
+  }
+  units.forEach(u=>{
+    const el = document.createElement("div");
+    el.className = "node" + (selectedUnitId===u.id ? " active" : "");
+    el.innerHTML = `
+      <div>
+        <div class="title">${u.title}</div>
+        <div class="sub">${(u.sections||[]).length} bölüm</div>
+      </div>
+      <button class="small-btn danger" onclick="event.stopPropagation(); deleteUnit('${u.id}')">Sil</button>
+    `;
+    el.onclick = ()=>{
+      selectedUnitId = u.id;
+      selectedSectionId = null;
+      editingId = null;
+      renderAll();
+    };
+    wrap.appendChild(el);
+  });
+}
+
+function renderSections(){
+  const wrap = document.getElementById("sectionList");
+  wrap.innerHTML = "";
+  const u = getUnit();
+  if(!u){
+    wrap.innerHTML = `<div class="mini">Ünite seçmeden bölüm eklenmez.</div>`;
+    return;
+  }
+  const sections = u.sections || [];
+  if(sections.length === 0){
+    wrap.innerHTML = `<div class="mini">Henüz bölüm yok. Yukarıdan ekle.</div>`;
+    return;
+  }
+  sections.forEach(s=>{
+    const count = bank.filter(q => q.level===selectedLevel && q.unitId===selectedUnitId && q.sectionId===s.id).length;
+    const el = document.createElement("div");
+    el.className = "node" + (selectedSectionId===s.id ? " active" : "");
+    el.innerHTML = `
+      <div>
+        <div class="title">${s.title}</div>
+        <div class="sub">${count} soru</div>
+      </div>
+      <button class="small-btn danger" onclick="event.stopPropagation(); deleteSection('${s.id}')">Sil</button>
+    `;
+    el.onclick = ()=>{
+      selectedSectionId = s.id;
+      editingId = null;
+      renderAll();
+    };
+    wrap.appendChild(el);
+  });
+}
+
+/* =======================
+   STRUCT ACTIONS
+======================= */
+function addUnit(){
+  if(!selectedLevel) return toast("Önce seviye seç.");
+  const title = document.getElementById("newUnitTitle").value.trim();
+  if(!title) return toast("Ünite adı yaz.");
+  structure[selectedLevel].units.push({ id: uid("u"), title, sections: [] });
+  document.getElementById("newUnitTitle").value = "";
+  saveAll();
+  renderAll();
+}
+
+function addSection(){
+  const u = getUnit();
+  if(!u) return toast("Önce ünite seç.");
+  const title = document.getElementById("newSectionTitle").value.trim();
+  if(!title) return toast("Bölüm adı yaz.");
+  u.sections = u.sections || [];
+  u.sections.push({ id: uid("s"), title });
+  document.getElementById("newSectionTitle").value = "";
+  saveAll();
+  renderAll();
+}
+
+function deleteUnit(unitId){
+  if(!confirm("Bu üniteyi ve altındaki bölümleri silmek istiyor musun? (Sorular da silinir)")) return;
+  const units = structure[selectedLevel].units || [];
+  const unit = units.find(u=>u.id===unitId);
+  const sectionIds = (unit?.sections||[]).map(s=>s.id);
+
+  // soruları sil
+  bank = bank.filter(q => !(q.level===selectedLevel && q.unitId===unitId && sectionIds.includes(q.sectionId)));
+  // üniteyi sil
+  structure[selectedLevel].units = units.filter(u=>u.id!==unitId);
+
+  if(selectedUnitId===unitId){ selectedUnitId=null; selectedSectionId=null; }
+  saveAll();
+  renderAll();
+}
+
+function deleteSection(sectionId){
+  if(!confirm("Bu bölümü silmek istiyor musun? (Sorular da silinir)")) return;
+  const u = getUnit();
+  if(!u) return;
+
+  bank = bank.filter(q => !(q.level===selectedLevel && q.unitId===selectedUnitId && q.sectionId===sectionId));
+  u.sections = (u.sections||[]).filter(s=>s.id!==sectionId);
+
+  if(selectedSectionId===sectionId) selectedSectionId=null;
+  saveAll();
+  renderAll();
+}
+
+/* =======================
+   TYPE UI + EDITOR
+======================= */
+function renderTypes(){
+  const wrap = document.getElementById("typeGrid");
+  wrap.innerHTML = "";
+  TYPES.forEach(t=>{
+    const el = document.createElement("div");
+    el.className = "type-card" + (selectedType===t.id ? " active" : "");
+    el.innerHTML = `
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div style="font-size:22px">${t.icon}</div>
+        <div>
+          <div class="t">${t.title}</div>
+          <div class="d">${t.desc}</div>
+        </div>
+      </div>
+    `;
+    el.onclick = ()=>{
+      selectedType = t.id;
+      editingId = null;
+      renderEditor();
+      renderTypes();
+    };
+    wrap.appendChild(el);
+  });
+}
+
+function renderEditor(prefill=null){
+  const ed = document.getElementById("editorArea");
+  const p = prefill || {};
+
+  if(!selectedLevel || !selectedUnitId || !selectedSectionId){
+    ed.innerHTML = `<div class="warn">Soldan önce <b>Seviye → Ünite → Bölüm</b> seç. Sonra soru ekleyebilirsin.</div>`;
+    return;
+  }
+
+  // Common header
+  const header = `
+    <div class="mini">
+      <b style="color:#fff">Hedef:</b> ${selectedLevel} / ${(getUnit()?.title||"-")} / ${(getSection()?.title||"-")}
+    </div>
+    <hr class="sep">
+  `;
+
+  if(selectedType === "test"){
+    ed.innerHTML = header + `
+      <textarea id="q_question" placeholder="Soru metni (örn: Ich ___ Student.)">${p.question||""}</textarea>
+      <input class="input" id="q_options" placeholder="Şıklar (virgülle: bin,bist,ist)" value="${(p.options||[]).join(",")}">
+      <input class="input" id="q_answer" placeholder="Doğru cevap (örn: bin)" value="${p.answer||""}">
+    `;
+  }
+
+  if(selectedType === "listening_fill"){
+    ed.innerHTML = header + `
+      <input class="input" id="q_audio" placeholder="Audio URL (mp3/ogg) (örn: https://.../a1_1.mp3)" value="${p.audioUrl||""}">
+      <textarea id="q_sentence" placeholder="Cümle (___ boşluk) (örn: Ich ___ Student.)">${p.sentence||""}</textarea>
+      <input class="input" id="q_answer" placeholder="Doğru kelime (örn: bin)" value="${p.answer||""}">
+    `;
+  }
+
+  if(selectedType === "drag_fill"){
+    ed.innerHTML = header + `
+      <textarea id="q_sentence" placeholder="Cümle (___ boşluklar) (örn: Ich ___ ___ Schule.)">${p.sentence||""}</textarea>
+      <input class="input" id="q_words" placeholder="Verilen kelimeler (virgülle) (örn: gehe,zur)" value="${(p.words||[]).join(",")}">
+      <input class="input" id="q_answer" placeholder="Doğru sıra (virgülle) (örn: gehe,zur)" value="${(p.answer||[]).join(",")}">
+      <div class="mini">Not: Boşluk sayısı ile doğru sıra eleman sayısı aynı olmalı.</div>
+    `;
+  }
+
+  if(selectedType === "image_match"){
+    ed.innerHTML = header + `
+      <textarea id="q_pairs" placeholder="Eşleştirme satır satır:
+resimURL | kelime
+resimURL | kelime">${(p.pairs||[]).map(x=>`${x.img} | ${x.word}`).join("\n")}</textarea>
+      <div class="mini">Her satır “resimURL | kelime” şeklinde.</div>
+    `;
+  }
+}
+
+/* =======================
+   QUESTIONS LIST + DRAG DROP
+======================= */
+function currentSectionQuestions(){
+  if(!selectedLevel || !selectedUnitId || !selectedSectionId) return [];
+  return bank
+    .filter(q => q.level===selectedLevel && q.unitId===selectedUnitId && q.sectionId===selectedSectionId)
+    .sort((a,b)=>(a.order??0)-(b.order??0));
+}
+
+function previewText(q){
+  if(q.type==="test") return (q.data?.question||"") + " • " + ((q.data?.options||[]).slice(0,3).join(", "));
+  if(q.type==="listening_fill") return "🎧 " + (q.data?.sentence||"");
+  if(q.type==="drag_fill") return "🧩 " + (q.data?.sentence||"");
+  if(q.type==="image_match") return "🖼️ " + ((q.data?.pairs||[]).length) + " eşleştirme";
+  return "";
+}
+
+function renderQuestionList(){
+  const wrap = document.getElementById("questionList");
+  const qs = currentSectionQuestions();
+
+  if(!selectedLevel || !selectedUnitId || !selectedSectionId){
+    wrap.innerHTML = `<div class="warn">Soru listesi için soldan bölüm seç.</div>`;
+    return;
+  }
+
+  if(qs.length === 0){
+    wrap.innerHTML = `<div class="warn">Bu bölümde soru yok. Sağdan soru ekleyebilirsin.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = "";
+  qs.forEach((q, idx)=>{
+    const el = document.createElement("div");
+    el.className = "qitem";
+    el.setAttribute("draggable","true");
+    el.dataset.id = q.id;
+
+    el.innerHTML = `
+      <div class="drag" title="Sürükle">⠿</div>
+      <div class="qmeta">
+        <div class="head">
+          <b>#${idx+1} • ${TYPES.find(t=>t.id===q.type)?.title || q.type}</b>
+          <span>ID: ${String(q.id).slice(-6)}</span>
+        </div>
+        <div class="preview">${escapeHtml(previewText(q)).slice(0,140)}</div>
+        <div class="qactions">
+          <button class="btn" onclick="editQuestion('${q.id}')">Düzenle</button>
+          <button class="btn danger" onclick="deleteQuestion('${q.id}')">Sil</button>
+        </div>
+      </div>
+    `;
+
+    // Drag handlers
+    el.addEventListener("dragstart", (e)=>{
+      e.dataTransfer.setData("text/plain", q.id);
+      el.style.opacity = "0.6";
+    });
+    el.addEventListener("dragend", ()=>{
+      el.style.opacity = "1";
+    });
+    el.addEventListener("dragover", (e)=> e.preventDefault());
+    el.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      const fromId = e.dataTransfer.getData("text/plain");
+      const toId = q.id;
+      if(!fromId || fromId===toId) return;
+      reorderWithinSection(fromId, toId);
+    });
+
+    wrap.appendChild(el);
+  });
+}
+
+function reorderWithinSection(fromId, toId){
+  const qs = currentSectionQuestions();
+  const fromIndex = qs.findIndex(x=>x.id===fromId);
+  const toIndex   = qs.findIndex(x=>x.id===toId);
+  if(fromIndex<0 || toIndex<0) return;
+
+  const moved = qs.splice(fromIndex,1)[0];
+  qs.splice(toIndex,0,moved);
+
+  // write back order
+  qs.forEach((x,i)=> x.order = i);
+
+  // update in main bank
+  const map = new Map(qs.map(x=>[x.id, x.order]));
+  bank.forEach(q=>{
+    if(q.level===selectedLevel && q.unitId===selectedUnitId && q.sectionId===selectedSectionId){
+      if(map.has(q.id)) q.order = map.get(q.id);
+    }
+  });
+  saveAll();
+  renderQuestionList();
+}
+
+/* =======================
+   CRUD QUESTIONS
+======================= */
+function saveQuestion(){
+  if(!selectedLevel || !selectedUnitId || !selectedSectionId){
+    return toast("Soldan seviye/ünite/bölüm seçmeden soru eklenmez.");
+  }
+
+  const unit = getUnit();
+  const section = getSection();
+  if(!unit || !section) return toast("Ünite/bölüm bulunamadı.");
+
+  // build data by type
+  let data = {};
+  if(selectedType==="test"){
+    const question = (document.getElementById("q_question")||{}).value?.trim() || "";
+    const optionsRaw = (document.getElementById("q_options")||{}).value?.trim() || "";
+    const answer = (document.getElementById("q_answer")||{}).value?.trim() || "";
+    const options = optionsRaw.split(",").map(x=>x.trim()).filter(Boolean);
+    if(!question || options.length<2 || !answer) return toast("Test sorusunda soru/şıklar/cevap zorunlu.");
+    data = { question, options, answer };
+  }
+
+  if(selectedType==="listening_fill"){
+    const audioUrl = (document.getElementById("q_audio")||{}).value?.trim() || "";
+    const sentence = (document.getElementById("q_sentence")||{}).value?.trim() || "";
+    const answer = (document.getElementById("q_answer")||{}).value?.trim() || "";
+    if(!sentence || !answer) return toast("Listening sorusunda cümle ve cevap zorunlu.");
+    data = { audioUrl, sentence, answer };
+  }
+
+  if(selectedType==="drag_fill"){
+    const sentence = (document.getElementById("q_sentence")||{}).value?.trim() || "";
+    const wordsRaw = (document.getElementById("q_words")||{}).value?.trim() || "";
+    const ansRaw = (document.getElementById("q_answer")||{}).value?.trim() || "";
+    const words = wordsRaw.split(",").map(x=>x.trim()).filter(Boolean);
+    const answer = ansRaw.split(",").map(x=>x.trim()).filter(Boolean);
+    if(!sentence || words.length<1 || answer.length<1) return toast("Drag-fill’de cümle/kelimeler/cevap zorunlu.");
+    data = { sentence, words, answer };
+  }
+
+  if(selectedType==="image_match"){
+    const raw = (document.getElementById("q_pairs")||{}).value || "";
+    const lines = raw.split("\n").map(l=>l.trim()).filter(Boolean);
+    const pairs = [];
+    for(const line of lines){
+      const parts = line.split("|").map(x=>x.trim());
+      if(parts.length>=2 && parts[0] && parts[1]){
+        pairs.push({ img: parts[0], word: parts.slice(1).join(" | ") });
+      }
+    }
+    if(pairs.length<2) return toast("En az 2 eşleştirme satırı ekle.");
+    data = { pairs };
+  }
+
+  const qs = currentSectionQuestions();
+  const nextOrder = qs.length ? (qs[qs.length-1].order ?? (qs.length-1)) + 1 : 0;
+
+  if(editingId){
+    // update
+    const idx = bank.findIndex(q=>q.id===editingId);
+    if(idx<0) return toast("Düzenlenen soru bulunamadı.");
+    bank[idx].type = selectedType;
+    bank[idx].data = data;
+    toast("Soru güncellendi ✅");
+    editingId = null;
+  }else{
+    // create
+    const q = {
+      id: uid("q"),
+      level: selectedLevel,
+      unitId: selectedUnitId,
+      sectionId: selectedSectionId,
+      order: nextOrder,
+      type: selectedType,
+      data: data,
+
+      // --- Backward-friendly fields (eski sayfalar kırılmasın diye) ---
+      unit: unit.title,
+      section: section.title,
+      question: data.question || data.sentence || "Eşleştirme",
+      options: Array.isArray(data.options) ? data.options.join(",") : (Array.isArray(data.words) ? data.words.join(",") : ""),
+      answer: Array.isArray(data.answer) ? data.answer.join(",") : (data.answer || "")
+    };
+
+    bank.push(q);
+    toast("Soru eklendi ✅");
+  }
+
+  saveAll();
+  renderQuestionList();
+  renderEditor(); // temizle
+}
+
+function editQuestion(id){
+  const q = bank.find(x=>x.id===id);
+  if(!q) return;
+  editingId = id;
+  selectedType = q.type || "test";
+
+  // ensure selection matches question location
+  selectedLevel = q.level;
+  selectedUnitId = q.unitId;
+  selectedSectionId = q.sectionId;
+
+  renderAll();
+
+  // prefill editor
+  const d = q.data || {};
+  const pre = {};
+  if(selectedType==="test") pre.question=d.question||"" , pre.options=d.options||[], pre.answer=d.answer||"";
+  if(selectedType==="listening_fill") pre.audioUrl=d.audioUrl||"", pre.sentence=d.sentence||"", pre.answer=d.answer||"";
+  if(selectedType==="drag_fill") pre.sentence=d.sentence||"", pre.words=d.words||[], pre.answer=d.answer||[];
+  if(selectedType==="image_match") pre.pairs=d.pairs||[];
+  renderEditor(pre);
+}
+
+function deleteQuestion(id){
+  if(!confirm("Bu soruyu silmek istiyor musun?")) return;
+  bank = bank.filter(q=>q.id!==id);
+  // re-order section
+  const qs = currentSectionQuestions();
+  qs.forEach((x,i)=>x.order=i);
+  const map = new Map(qs.map(x=>[x.id,x.order]));
+  bank.forEach(q=>{
+    if(q.level===selectedLevel && q.unitId===selectedUnitId && q.sectionId===selectedSectionId){
+      if(map.has(q.id)) q.order = map.get(q.id);
+    }
+  });
+  saveAll();
+  renderQuestionList();
+}
+
+function dangerClearAll(){
+  if(!confirm("Tüm soru bankasını temizlemek istiyor musun? (Geri dönüş yok)")) return;
+  if(!confirm("EMİN MİSİN?")) return;
+  bank = [];
+  saveAll();
+  renderAll();
+}
+
+/* =======================
+   IMPORT / EXPORT
+======================= */
+function exportJSON(){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    structure,
+    bank
+  };
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "soru_bankasi_yedek.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importJSON(){
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = "application/json";
+  inp.onchange = () => {
+    const f = inp.files?.[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try{
+        const obj = JSON.parse(String(r.result||"{}"));
+        if(obj && obj.structure && obj.bank){
+          structure = obj.structure;
+          bank = obj.bank;
+          ensureStructure();
+          saveAll();
+          renderAll();
+          toast("İçe aktarıldı ✅");
+        }else{
+          toast("Geçersiz JSON formatı.");
+        }
+      }catch(e){
+        toast("JSON okunamadı: " + e.message);
+      }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+/* =======================
+   XSS-SAFE PREVIEW
+======================= */
+function escapeHtml(s){
+  return String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* =======================
+   MAIN RENDER
+======================= */
+function renderAll(){
+  renderLevels();
+  renderUnits();
+  renderSections();
+  renderTypes();
+  renderEditor();       // default empty
+  renderQuestionList();
+  updateCounters();
+}
+renderAll();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>Deutsch Pro | Mini Diziler & Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020617;
+  --card: #0f172a;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --accent: #f43f5e;
+  --ok: #10b981;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --border: rgba(148, 163, 184, 0.1);
+  --glass: rgba(30, 41, 59, 0.7);
+  --shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+* { box-sizing: border-box; transition: all .2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ADMIN PANEL STİLLERİ */
+#adminSection {
+  display: none; 
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border-bottom: 2px solid var(--primary);
+  padding: 40px 20px;
+  margin-bottom: 40px;
+  box-shadow: var(--shadow);
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 30px;
+}
+
+.preview-box {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-box iframe { width:100%; height:100%; border:none; }
+
+/* ÖĞRENCİ ARAYÜZÜ STİLLERİ */
+header {
+  padding: 40px 20px;
+  text-align: center;
+  background: linear-gradient(to bottom, rgba(99,102,241,0.1), transparent);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.video-card {
+  background: var(--card);
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+}
+
+.video-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary);
+  box-shadow: 0 15px 30px rgba(99,102,241,0.2);
+}
+
+.thumb-area {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #1e293b;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+}
+
+.thumb-area img { width: 100%; height: 100%; object-fit: cover; }
+
+.play-btn {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  bottom: 15px;
+  right: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.card-body { padding: 20px; }
+.card-body h3 { margin: 0 0 10px 0; font-size: 18px; }
+.card-body p { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* MODAL / PLAYER */
+#playerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.98);
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 1000px;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* BUTTONS & INPUTS */
+.btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+
+input, textarea, select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+  color: white;
+}
+
+/* YÖNETİM BUTONU GİZLİ BAŞLAR */
+#adminTriggerBtn {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid #10b981;
+  padding: 8px 15px;
+  font-size: 12px;
+  border-radius: 50px;
+  cursor: pointer;
+  z-index: 999;
+  display: none; 
+}
+
+@media (max-width: 768px) {
+  .admin-container { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<section id="adminSection">
+  <div class="admin-container">
+    <div>
+      <h2 id="formTitle">🛠 Video Editör (Master Admin)</h2>
+      <div class="preview-box" id="adminPreview">
+        <span style="color:var(--muted)">Video Önizleme</span>
+      </div>
+    </div>
+    
+    <div>
+      <div style="display:grid; grid-template-columns: 60px 1fr; gap:10px;">
+        <input type="text" id="admEmoji" placeholder="🎬">
+        <input type="text" id="admTitle" placeholder="Video Başlığı">
+      </div>
+      <input type="text" id="admUrl" placeholder="Video Link (YouTube/MP4)" oninput="updateAdminPreview()">
+      <textarea id="admDesc" placeholder="Kısa Açıklama" rows="2"></textarea>
+      
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <input type="text" id="admThumb" placeholder="Kapak Görseli URL">
+        <input type="number" id="admOrder" placeholder="Sıralama (Örn: 1)">
+      </div>
+
+      <input type="hidden" id="editId">
+      
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="saveVideo()">Kaydet ve Yayınla</button>
+        <button class="btn" style="background:var(--accent)" onclick="toggleAdmin(false)">Paneli Kapat</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<header>
+  <h1>Deutsch Pro</h1>
+  <p style="color:var(--muted)">Almanca Öğrenme Serüveni: Mini Diziler</p>
+</header>
+
+<div class="grid" id="videoGrid"></div>
+
+<div id="playerOverlay">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closePlayer()">&times;</span>
+    <div class="preview-box" id="mainPlayer" style="border:none; box-shadow: 0 0 100px rgba(0,0,0,0.8);"></div>
+    <div style="padding-top:20px;">
+      <h2 id="playingTitle" style="margin:0;"></h2>
+      <p id="playingDesc" style="color:var(--muted)"></p>
+    </div>
+  </div>
+</div>
+
+<div id="adminTriggerBtn" onclick="toggleAdmin(true)">⚙️ Video Yönetimi</div>
+
+<script>
+const KEY = "deutsch_pro_episodes";
+const SESSION_KEY = "session_student_id"; // index.html ile aynı key
+let episodes = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+// OTURUM KONTROLÜ
+function checkAdminSession() {
+  const session = localStorage.getItem(SESSION_KEY);
+  // Eğer giriş yapan 'admin' ise butonları göster
+  if (session === "admin") {
+    document.getElementById('adminTriggerBtn').style.display = 'block';
+  }
+}
+
+function toggleAdmin(show) {
+  document.getElementById('adminSection').style.display = show ? 'block' : 'none';
+  if(show) window.scrollTo({top:0, behavior:'smooth'});
+  render(); // Butonların görünürlüğünü güncellemek için tekrar render et
+}
+
+function updateAdminPreview() {
+  const url = document.getElementById('admUrl').value;
+  const box = document.getElementById('adminPreview');
+  box.innerHTML = getEmbedCode(url);
+}
+
+function getEmbedCode(url) {
+  if(!url) return '<span style="color:var(--muted)">Video Önizleme</span>';
+  if(url.includes('youtube.com') || url.includes('youtu.be')) {
+    let id = url.includes('v=') ? url.split('v=')[1].split('&')[0] : url.split('/').pop();
+    return `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
+  }
+  if(url.match(/\.(mp4|webm)$/)) {
+    return `<video src="${url}" controls style="width:100%; height:100%;"></video>`;
+  }
+  return `<iframe src="${url}" allowfullscreen></iframe>`;
+}
+
+function saveVideo() {
+  const id = document.getElementById('editId').value;
+  const newEp = {
+    id: id ? parseInt(id) : Date.now(),
+    title: document.getElementById('admTitle').value,
+    emoji: document.getElementById('admEmoji').value || "🎬",
+    url: document.getElementById('admUrl').value,
+    desc: document.getElementById('admDesc').value,
+    thumb: document.getElementById('admThumb').value,
+    order: parseInt(document.getElementById('admOrder').value) || 0
+  };
+
+  if(!newEp.title || !newEp.url) return alert("Başlık ve URL zorunludur!");
+
+  if(id) {
+    const idx = episodes.findIndex(e => e.id === parseInt(id));
+    episodes[idx] = newEp;
+  } else {
+    episodes.push(newEp);
+  }
+
+  localStorage.setItem(KEY, JSON.stringify(episodes));
+  clearForm();
+  render();
+}
+
+function clearForm() {
+  document.getElementById('editId').value = "";
+  document.getElementById('admTitle').value = "";
+  document.getElementById('admUrl').value = "";
+  document.getElementById('admDesc').value = "";
+  document.getElementById('admThumb').value = "";
+  document.getElementById('admOrder').value = "";
+  document.getElementById('adminPreview').innerHTML = "";
+  document.getElementById('formTitle').textContent = "🛠 Video Editör (Master Admin)";
+}
+
+function render() {
+  const grid = document.getElementById('videoGrid');
+  const isAdmin = localStorage.getItem(SESSION_KEY) === "admin";
+  const isPanelOpen = document.getElementById('adminSection').style.display === 'block';
+
+  episodes.sort((a,b) => a.order - b.order);
+  
+  grid.innerHTML = episodes.map(e => `
+    <div class="video-card" onclick="openPlayer(${e.id})">
+      <div class="thumb-area">
+        ${e.thumb ? `<img src="${e.thumb}">` : e.emoji}
+        <div class="play-btn">▶</div>
+      </div>
+      <div class="card-body">
+        <h3>${e.emoji} ${e.title}</h3>
+        <p>${e.desc || 'Açıklama mevcut değil.'}</p>
+        
+        ${isAdmin && isPanelOpen ? `
+        <div style="margin-top:15px; display:flex; gap:10px; border-top:1px solid var(--border); padding-top:10px;">
+           <button class="btn" style="padding:6px 12px; font-size:11px; background:rgba(255,255,255,0.1);" 
+             onclick="event.stopPropagation(); editVideo(${e.id})">✏️ Düzenle</button>
+           <button class="btn" style="padding:6px 12px; font-size:11px; background:rgba(244,63,94,0.1); color:var(--accent);" 
+             onclick="event.stopPropagation(); deleteVideo(${e.id})">🗑 Sil</button>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openPlayer(id) {
+  const e = episodes.find(x => x.id === id);
+  document.getElementById('mainPlayer').innerHTML = getEmbedCode(e.url);
+  document.getElementById('playingTitle').innerText = e.emoji + " " + e.title;
+  document.getElementById('playingDesc').innerText = e.desc;
+  document.getElementById('playerOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayer() {
+  document.getElementById('playerOverlay').style.display = 'none';
+  document.getElementById('mainPlayer').innerHTML = "";
+  document.body.style.overflow = 'auto';
+}
+
+function editVideo(id) {
+  const e = episodes.find(x => x.id === id);
+  document.getElementById('editId').value = e.id;
+  document.getElementById('admTitle').value = e.title;
+  document.getElementById('admEmoji').value = e.emoji;
+  document.getElementById('admUrl').value = e.url;
+  document.getElementById('admDesc').value = e.desc;
+  document.getElementById('admThumb').value = e.thumb;
+  document.getElementById('admOrder').value = e.order;
+  document.getElementById('formTitle').textContent = "📝 Bölümü Düzenle: " + e.title;
+  updateAdminPreview();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function deleteVideo(id) {
+  if(confirm("Bu videoyu silmek istediğine emin misin?")) {
+    episodes = episodes.filter(x => x.id !== id);
+    localStorage.setItem(KEY, JSON.stringify(episodes));
+    render();
+  }
+}
+
+// BAŞLATMA
+checkAdminSession();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>Deutsch Pro | Studio Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020617;
+  --card:#0f172a;
+  --primary:#6366f1;
+  --accent:#f43f5e;
+  --ok:#10b981;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --border:rgba(148,163,184,.12);
+  --shadow:0 18px 40px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box; transition:all .2s ease}
+body{
+  margin:0;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding-bottom:60px;
+}
+header{
+  padding:18px 26px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  background:rgba(15,23,42,.82);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:100;
+}
+.brand{
+  display:flex; align-items:center; gap:12px;
+}
+.brand-badge{
+  background:var(--primary);
+  width:36px; height:36px;
+  border-radius:12px;
+  display:grid; place-items:center;
+  font-weight:900;
+  box-shadow:0 10px 24px rgba(99,102,241,.25);
+}
+header strong{font-size:16px; letter-spacing:.4px}
+header strong span{font-weight:500; color:var(--primary)}
+.header-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+.btn{
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:800;
+  font-size:13px;
+}
+.btn:hover{border-color:rgba(99,102,241,.5); transform:translateY(-1px)}
+.btn.primary{
+  background:linear-gradient(135deg,#6366f1 0%, #a855f7 100%);
+  border:none;
+}
+.btn.danger{
+  border-color:rgba(244,63,94,.35);
+}
+.btn.danger:hover{border-color:rgba(244,63,94,.7); color:var(--accent)}
+.btn.ok{
+  border-color:rgba(16,185,129,.35);
+}
+.btn.ok:hover{border-color:rgba(16,185,129,.7); color:var(--ok)}
+
+.container{
+  max-width:1180px;
+  margin:26px auto 0;
+  padding:0 18px;
+  display:grid;
+  grid-template-columns:1fr 1.6fr;
+  gap:18px;
+}
+.editor-pane{
+  background:var(--card);
+  border-radius:24px;
+  padding:24px;
+  border:1px solid var(--border);
+  position:sticky;
+  top:96px;
+  height:fit-content;
+  box-shadow:var(--shadow);
+}
+.editor-pane h3{margin:0 0 14px; font-size:16px}
+.hr{height:1px; background:var(--border); margin:14px 0}
+.input-group{margin-bottom:14px}
+label{
+  display:block;
+  font-size:11px;
+  font-weight:900;
+  color:var(--muted);
+  margin-bottom:8px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+input, select, textarea{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#020617;
+  color:var(--text);
+  font-family:inherit;
+  font-size:14px;
+  outline:none;
+}
+input:focus, textarea:focus, select:focus{
+  border-color:rgba(99,102,241,.55);
+  box-shadow:0 0 0 3px rgba(99,102,241,.18);
+}
+.row{display:flex; gap:10px}
+.row > *{flex:1}
+.small{font-size:12px; color:var(--muted); line-height:1.4}
+.switch{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.03);
+}
+.switch b{font-size:13px}
+.switch span{font-size:12px; color:var(--muted)}
+.toggle{
+  width:46px; height:28px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.06);
+  position:relative;
+  cursor:pointer;
+}
+.toggle::after{
+  content:"";
+  width:22px; height:22px;
+  border-radius:50%;
+  background:#94a3b8;
+  position:absolute;
+  top:50%; left:3px;
+  transform:translateY(-50%);
+  transition:all .2s ease;
+}
+.toggle.on{
+  background:rgba(16,185,129,.15);
+  border-color:rgba(16,185,129,.35);
+}
+.toggle.on::after{
+  left:21px;
+  background:rgba(16,185,129,.95);
+}
+
+.list-pane{display:flex; flex-direction:column; gap:14px}
+.list-head{
+  display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap;
+}
+.list-head h3{margin:0; font-size:16px}
+.counter{
+  font-size:12px;
+  color:var(--primary);
+  font-weight:900;
+  letter-spacing:1px;
+}
+.content-item{
+  background:var(--card);
+  border-radius:20px;
+  padding:16px;
+  border:1px solid var(--border);
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+.item-preview{
+  width:100px; height:70px;
+  border-radius:14px;
+  background:#020617;
+  display:flex; align-items:center; justify-content:center;
+  font-size:30px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.06);
+}
+.item-preview img{width:100%; height:100%; object-fit:cover}
+.item-info{flex:1; min-width:0}
+.item-info h4{margin:0 0 4px; font-size:15px; font-weight:900}
+.item-info p{margin:0; font-size:12px; color:var(--muted); line-height:1.4}
+.tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px}
+.tag{
+  font-size:10px; font-weight:900;
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(99,102,241,.12);
+  color:var(--primary);
+  border:1px solid rgba(99,102,241,.22);
+}
+.tag.gray{
+  background:rgba(255,255,255,.05);
+  color:var(--muted);
+  border:1px solid var(--border);
+}
+.tag.ok{
+  background:rgba(16,185,129,.12);
+  color:var(--ok);
+  border:1px solid rgba(16,185,129,.22);
+}
+
+.item-actions{display:flex; gap:8px}
+.icon-btn{
+  width:40px; height:40px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  background:transparent;
+  color:var(--text);
+}
+.icon-btn:hover{background:rgba(255,255,255,.05); border-color:rgba(99,102,241,.55)}
+.icon-btn.del:hover{border-color:rgba(244,63,94,.65); color:var(--accent)}
+.icon-btn.up:hover{border-color:rgba(16,185,129,.55); color:var(--ok)}
+
+@media (max-width:980px){
+  .container{grid-template-columns:1fr}
+  .editor-pane{position:static}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-badge">S</div>
+    <strong>STUDIO <span>EDITOR</span></strong>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn" onclick="location.href='diziler.html'">Canlıyı Gör</button>
+    <button class="btn ok" onclick="exportJSON()">Export JSON</button>
+    <button class="btn" onclick="importJSON()">Import JSON</button>
+    <button class="btn danger" onclick="resetCompletions()">Tamamlanmaları Sıfırla</button>
+    <button class="btn danger" onclick="wipeAll()">Tüm Bölümleri Sil</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="editor-pane">
+    <h3 id="formTitle">Yeni Bölüm Ekle</h3>
+    <div class="small">YouTube / Vimeo / MP4 linki koyabilirsin. YouTube: watch?v= / youtu.be / shorts linkleri olur.</div>
+
+    <div class="hr"></div>
+
+    <div class="input-group">
+      <label>İkon & Başlık</label>
+      <div class="row">
+        <input type="text" id="emoji" placeholder="🎬" style="max-width:90px; text-align:center;">
+        <input type="text" id="title" placeholder="Bölüm Başlığı">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Sıra (Order) & Seviye</label>
+      <div class="row">
+        <input type="number" id="order" placeholder="1" min="1">
+        <select id="level">
+          <option>A1 - Başlangıç</option>
+          <option>A2 - Temel</option>
+          <option>B1 - Orta</option>
+          <option>B2 - İleri</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Kategori</label>
+      <select id="cat">
+        <option>Günlük Diyalog</option>
+        <option>Gramatik</option>
+        <option>Kültür</option>
+        <option>Kelime</option>
+        <option>Dinleme</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label>Video URL</label>
+      <input type="text" id="vUrl" placeholder="https://youtube.com/watch?v=... veya .mp4">
+    </div>
+
+    <div class="input-group">
+      <label>Kapak Görseli (opsiyonel)</label>
+      <input type="text" id="thumbUrl" placeholder="https://.../kapak.jpg (boş bırakabilirsin)">
+    </div>
+
+    <div class="input-group">
+      <label>Kısa Açıklama</label>
+      <textarea id="desc" rows="3" placeholder="Bu bölümde neler öğrenilecek?"></textarea>
+    </div>
+
+    <div class="switch">
+      <div>
+        <b>Bölüm kilidi</b>
+        <span>ON: Önceki tamamlanmadan açılmaz</span>
+      </div>
+      <div id="lockToggle" class="toggle on" onclick="toggleLock()"></div>
+    </div>
+
+    <input type="hidden" id="editId">
+
+    <button class="btn primary" style="width:100%; padding:14px; margin-top:14px" onclick="handleSave()">Sistemi Güncelle</button>
+    <button id="cancelBtn" onclick="resetForm()" style="display:none; width:100%; margin-top:10px; background:none; border:none; color:var(--muted); cursor:pointer; font-weight:800;">Değişiklikleri İptal Et</button>
+  </div>
+
+  <div class="list-pane">
+    <div class="list-head">
+      <h3>Yayındaki Bölümler</h3>
+      <div class="counter" id="itemCount">0 BÖLÜM</div>
+    </div>
+    <div id="contentList"></div>
+  </div>
+</div>
+
+<script>
+/** Storage keys (v2) */
+const KEY_EP = "episodes_v2";
+const KEY_DONE = "dizi_done_v2";
+
+let episodes = JSON.parse(localStorage.getItem(KEY_EP) || "[]");
+
+/** lock default */
+let lockedByPrev = true;
+
+function normalizeEpisodes(list){
+  return (list || [])
+    .map((e, idx)=>({
+      id: e.id ?? Date.now() + idx,
+      emoji: e.emoji || "🎬",
+      title: e.title || "Bölüm",
+      level: e.level || "A1 - Başlangıç",
+      cat: e.cat || "Günlük Diyalog",
+      videoUrl: e.videoUrl || "",
+      thumbUrl: e.thumbUrl || "",
+      desc: e.desc || "",
+      order: Number.isFinite(+e.order) ? +e.order : (idx + 1),
+      lockedByPrev: (typeof e.lockedByPrev === "boolean") ? e.lockedByPrev : true,
+      createdAt: e.createdAt || (e.id || Date.now())
+    }))
+    .sort((a,b)=> (a.order - b.order) || (a.createdAt - b.createdAt));
+}
+
+function saveAll(){
+  episodes = normalizeEpisodes(episodes);
+  localStorage.setItem(KEY_EP, JSON.stringify(episodes));
+}
+
+function render(){
+  episodes = normalizeEpisodes(JSON.parse(localStorage.getItem(KEY_EP) || "[]"));
+  document.getElementById("itemCount").textContent = `${episodes.length} BÖLÜM`;
+
+  const list = document.getElementById("contentList");
+  if(episodes.length === 0){
+    list.innerHTML = `<div style="text-align:center; padding:70px 0; opacity:.25">Henüz içerik eklenmedi.</div>`;
+    return;
+  }
+
+  list.innerHTML = episodes.map((e, idx)=>`
+    <div class="content-item">
+      <div class="item-preview">
+        ${
+          e.thumbUrl
+            ? `<img src="${escapeHtml(e.thumbUrl)}" onerror="this.remove(); this.parentElement.textContent='${escapeHtml(e.emoji)}'">`
+            : escapeHtml(e.emoji || "🎬")
+        }
+      </div>
+
+      <div class="item-info">
+        <h4>${escapeHtml(e.title)} <span style="opacity:.55; font-size:12px">#${escapeHtml(e.order)}</span></h4>
+        <p>${escapeHtml((e.desc || "Açıklama yok").slice(0, 70))}${(e.desc||"").length>70 ? "..." : ""}</p>
+        <div class="tags">
+          <span class="tag">${escapeHtml(e.level)}</span>
+          <span class="tag gray">${escapeHtml(e.cat)}</span>
+          <span class="tag ${e.lockedByPrev ? 'gray' : 'ok'}">${e.lockedByPrev ? "Kilit: ON" : "Kilit: OFF"}</span>
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:#94a3b8; word-break:break-all;">
+          ${escapeHtml(e.videoUrl || "")}
+        </div>
+      </div>
+
+      <div class="item-actions">
+        <button class="icon-btn up" title="Yukarı al" onclick="moveUp(${idx})">⬆️</button>
+        <button class="icon-btn" title="Düzenle" onclick="editItem(${e.id})">✏️</button>
+        <button class="icon-btn del" title="Sil" onclick="removeItem(${e.id})">🗑️</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function toggleLock(){
+  lockedByPrev = !lockedByPrev;
+  const t = document.getElementById("lockToggle");
+  t.classList.toggle("on", lockedByPrev);
+}
+
+function handleSave(){
+  const id = document.getElementById("editId").value.trim();
+  const data = {
+    id: id ? parseInt(id,10) : Date.now(),
+    emoji: (document.getElementById("emoji").value || "🎬").trim(),
+    title: (document.getElementById("title").value || "").trim(),
+    level: document.getElementById("level").value,
+    cat: document.getElementById("cat").value,
+    videoUrl: (document.getElementById("vUrl").value || "").trim(),
+    thumbUrl: (document.getElementById("thumbUrl").value || "").trim(),
+    desc: (document.getElementById("desc").value || "").trim(),
+    order: parseInt(document.getElementById("order").value || "0", 10) || (episodes.length + 1),
+    lockedByPrev: lockedByPrev,
+    createdAt: Date.now()
+  };
+
+  if(!data.title || !data.videoUrl){
+    alert("Lütfen Başlık ve Video URL alanlarını doldurun!");
+    return;
+  }
+
+  if(id){
+    const index = episodes.findIndex(x => x.id === parseInt(id,10));
+    if(index === -1){
+      alert("Düzenlenecek bölüm bulunamadı.");
+      return;
+    }
+    // createdAt korunabilir, ama güncelleme olsun istersen bu satırı kaldır
+    data.createdAt = episodes[index].createdAt || Date.now();
+    episodes[index] = data;
+  } else {
+    episodes.push(data);
+  }
+
+  saveAll();
+  resetForm();
+  render();
+}
+
+function editItem(id){
+  const item = episodes.find(x => x.id === id);
+  if(!item) return;
+
+  document.getElementById("editId").value = item.id;
+  document.getElementById("emoji").value = item.emoji || "🎬";
+  document.getElementById("title").value = item.title || "";
+  document.getElementById("level").value = item.level || "A1 - Başlangıç";
+  document.getElementById("cat").value = item.cat || "Günlük Diyalog";
+  document.getElementById("vUrl").value = item.videoUrl || "";
+  document.getElementById("thumbUrl").value = item.thumbUrl || "";
+  document.getElementById("desc").value = item.desc || "";
+  document.getElementById("order").value = item.order || "";
+
+  lockedByPrev = (item.lockedByPrev !== false);
+  const t = document.getElementById("lockToggle");
+  t.classList.toggle("on", lockedByPrev);
+
+  document.getElementById("formTitle").textContent = "Bölümü Düzenle";
+  document.getElementById("cancelBtn").style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function removeItem(id){
+  if(!confirm("Bu içeriği silmek istediğine emin misin?")) return;
+  episodes = episodes.filter(x => x.id !== id);
+  saveAll();
+  render();
+}
+
+function moveUp(index){
+  if(index <= 0) return;
+  // swap + order swap
+  const a = episodes[index-1];
+  const b = episodes[index];
+  const tmpOrder = a.order;
+  a.order = b.order;
+  b.order = tmpOrder;
+
+  episodes[index-1] = b;
+  episodes[index] = a;
+
+  saveAll();
+  render();
+}
+
+function resetForm(){
+  document.getElementById("editId").value = "";
+  document.getElementById("emoji").value = "";
+  document.getElementById("title").value = "";
+  document.getElementById("vUrl").value = "";
+  document.getElementById("thumbUrl").value = "";
+  document.getElementById("desc").value = "";
+  document.getElementById("order").value = "";
+
+  lockedByPrev = true;
+  document.getElementById("lockToggle").classList.add("on");
+
+  document.getElementById("formTitle").textContent = "Yeni Bölüm Ekle";
+  document.getElementById("cancelBtn").style.display = "none";
+}
+
+function resetCompletions(){
+  if(!confirm("Tüm kullanıcı tamamlanmalarını (ilerlemeyi) sıfırlamak istiyor musun?")) return;
+  localStorage.setItem(KEY_DONE, "[]");
+  alert("Tamamlanmalar sıfırlandı.");
+}
+
+function wipeAll(){
+  if(!confirm("TÜM bölümler silinecek. Emin misin?")) return;
+  localStorage.setItem(KEY_EP, "[]");
+  episodes = [];
+  resetForm();
+  render();
+}
+
+function exportJSON(){
+  saveAll();
+  const data = localStorage.getItem(KEY_EP) || "[]";
+  const blob = new Blob([data], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "episodes_export.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(){
+  const raw = prompt("JSON içeriğini buraya yapıştır (episodes_export.json içeriği):");
+  if(!raw) return;
+
+  try{
+    const parsed = JSON.parse(raw);
+    if(!Array.isArray(parsed)) throw new Error("JSON bir dizi (array) olmalı.");
+    episodes = normalizeEpisodes(parsed);
+    localStorage.setItem(KEY_EP, JSON.stringify(episodes));
+    resetForm();
+    render();
+    alert("Import başarılı ✅");
+  }catch(err){
+    alert("Import hatası: " + err.message);
+  }
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/** Backward compat: eski anahtar varsa içeri al */
+(function migrate(){
+  const v2 = localStorage.getItem(KEY_EP);
+  if(!v2){
+    const legacy = JSON.parse(localStorage.getItem("episodes") || "[]");
+    if(Array.isArray(legacy) && legacy.length){
+      episodes = normalizeEpisodes(legacy);
+      localStorage.setItem(KEY_EP, JSON.stringify(episodes));
+    } else {
+      localStorage.setItem(KEY_EP, "[]");
+    }
+  }
+})();
+
+render();
+</script>
+</body>
+</html>

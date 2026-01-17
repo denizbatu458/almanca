@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Pro Dil | Alıştırmalar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+ --bg1:#0f172a; --bg2:#020617;
+ --panel:rgba(30,41,59,.7);
+ --border:rgba(255,255,255,.1);
+ --accent:#ff4b4b; --accent2:#ff8a8a;
+ --ok:#10b981; --danger:#ef4444;
+ --text:#f8fafc; --muted:#94a3b8;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Inter,sans-serif;
+ background:radial-gradient(circle at top right,#1e293b,#020617);
+ color:var(--text);min-height:100vh
+}
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.drawer{
+ width:320px;background:#0f172a;border-right:1px solid var(--border);
+ padding:20px;position:sticky;top:0;height:100vh;overflow:auto
+}
+.unit-title{
+ font-size:11px;letter-spacing:1px;text-transform:uppercase;
+ color:var(--accent2);margin:15px 0 6px;opacity:.9;font-weight:900
+}
+.section-btn{
+ width:100%;padding:12px 12px;border-radius:14px;
+ background:rgba(255,255,255,.04);
+ border:1px solid var(--border);color:#fff;
+ cursor:pointer;margin-bottom:8px;text-align:left;transition: 0.2s;
+ display:flex; justify-content:space-between; align-items:center; gap:10px;
+}
+.section-btn:hover{background:rgba(255,75,75,.12); border-color:rgba(255,255,255,.22)}
+.section-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+.badge{
+ font-size:11px; font-weight:900;
+ padding:4px 10px; border-radius:999px;
+ border:1px solid rgba(255,255,255,.14);
+ background:rgba(0,0,0,.25); color:var(--muted);
+}
+.badge.done{border-color:rgba(16,185,129,.35); color:var(--ok); background:rgba(16,185,129,.08)}
+
+/* CONTENT AREA */
+.content{flex:1;padding:40px;display:flex;justify-content:center;align-items:center;}
+.wrap{
+ width:100%;max-width:760px;
+ background:var(--panel);border-radius:28px;
+ padding:40px;border:1px solid var(--border);
+ backdrop-filter: blur(10px);
+ box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+.option-grid{display:grid; gap:12px; margin-top:22px;}
+.opt{
+ width:100%; padding:12px 14px; border-radius:14px;
+ border:1px solid var(--border);
+ background:rgba(255,255,255,.07);
+ color:#fff; cursor:pointer; font-weight:800; text-align:left;
+ transition:.2s;
+}
+.opt:hover{transform:translateY(-2px); border-color:rgba(255,255,255,.25)}
+.progress-bar{height:8px;background:rgba(0,0,0,.3);border-radius:999px;overflow:hidden;border:1px solid var(--border);margin-bottom:18px}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.35s}
+.input{
+ width:100%;
+ background:rgba(0,0,0,.25);
+ border:1px solid var(--border);
+ color:#fff;
+ padding:12px 12px;
+ border-radius:14px;
+ outline:none;
+}
+.wordbank{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+.word{
+ padding:10px 12px; border-radius:999px;
+ border:1px solid var(--border);
+ background:rgba(255,255,255,.07);
+ cursor:pointer; font-weight:900;
+}
+.word.used{opacity:.35; pointer-events:none}
+.small{font-size:12px;color:var(--muted);line-height:1.35;margin-top:8px}
+.hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+
+.paragraph p{
+  margin-bottom:18px;
+  line-height:1.7;
+  font-size:18px;
+}
+
+.blank{
+  display:inline-block;
+  padding:2px 8px;
+  margin:0 4px;
+  border-bottom:2px solid #ff8a8a;
+  color:#ff8a8a;
+  font-weight:900;
+}
+
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <div class="drawer">
+    <div id="userLvl" style="margin-bottom:14px; font-weight:900; color:var(--accent2); font-size:14px;"></div>
+    <div id="sidebarMenu"></div>
+    <div style="margin-top:20px">
+      <button class="section-btn" style="border-color:rgba(255,75,75,.45); color:#fff; justify-content:center" onclick="location.href='index.html'">🏠 Ana Panel</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="wrap" id="mainDisplay">
+      <div style="text-align:center;padding:60px">
+        <div style="font-size:60px;margin-bottom:20px">📖</div>
+        <h2>Öğrenmeye Başla</h2>
+        <p style="color:var(--muted)">Soldan ünite ve bölümü seç, sonra soruları çöz.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===== KEYS ===== */
+const DB_KEY="PRO_DIL_DATA_V6";
+const SESSION_KEY="session_student_id";
+const LEVELS_KEY="student_levels";
+const DONE_KEY="practice_done";
+
+/* ===== LOAD ===== */
+let bank = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+const sessId = localStorage.getItem(SESSION_KEY);
+const levels = JSON.parse(localStorage.getItem(LEVELS_KEY)) || {};
+const userLevel = levels[sessId] || "A1.1";
+
+/* ===== UI ===== */
+document.getElementById("userLvl").textContent = "Mevcut Seviye: " + userLevel;
+
+/* ===== MENU BUILD (level -> unitTitle -> sectionTitle) ===== */
+function renderSidebar(){
+  const menu = document.getElementById("sidebarMenu");
+  const done = JSON.parse(localStorage.getItem(DONE_KEY)) || {};
+  const myDone = done[sessId] || [];
+
+  menu.innerHTML = "";
+
+  // sadece benim seviyem
+  const qs = bank.filter(q => (q.level || "") === userLevel);
+
+  if(qs.length === 0){
+    menu.innerHTML = `<div style="font-size:12px; color:var(--muted); padding:10px;">Bu seviye için henüz soru eklenmemiş.</div>`;
+    return;
+  }
+
+  // group by unit/section titles
+  const map = {}; // unitTitle -> sectionTitle -> [q]
+  qs.forEach(q=>{
+    const unit = q.unit || q.unitTitle || "Genel";
+    const sec  = q.section || q.sectionTitle || "Alıştırma";
+    if(!map[unit]) map[unit] = {};
+    if(!map[unit][sec]) map[unit][sec] = [];
+    map[unit][sec].push(q);
+  });
+
+  // render
+  Object.keys(map).forEach(unit=>{
+    menu.innerHTML += `<div class="unit-title">${escapeHtml(unit)}</div>`;
+    Object.keys(map[unit]).forEach(sec=>{
+      const key = unit + "||" + sec;
+      const isDone = myDone.includes(key);
+      const count = map[unit][sec].length;
+      menu.innerHTML += `
+        <button class="section-btn ${isDone ? 'completed' : ''}" onclick="loadLesson('${escapeJs(unit)}','${escapeJs(sec)}',this)">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span>${isDone ? '✅' : '📌'}</span>
+            <b>${escapeHtml(sec)}</b>
+          </div>
+          <span class="badge ${isDone?'done':''}">${count} soru</span>
+        </button>
+      `;
+    });
+  });
+}
+
+/* ===== PRACTICE STATE ===== */
+let currentLesson = [], step = 0, activeKey = "";
+let dragFillState = null;
+
+function loadLesson(unit, section, btn){
+  document.querySelectorAll(".section-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  activeKey = unit + "||" + section;
+
+  // seçilen bölümdeki soruları order’a göre sırala
+  currentLesson = bank
+    .filter(q => (q.level||"")===userLevel && (q.unit||"")===unit && (q.section||"")===section)
+    .slice()
+    .sort((a,b)=>(a.order??0)-(b.order??0));
+
+  step = 0;
+  renderStep();
+}
+
+function renderStep(){
+  const box = document.getElementById("mainDisplay");
+  if(step >= currentLesson.length){ finish(); return; }
+
+  const q = currentLesson[step];
+  const pct = Math.round((step/currentLesson.length)*100);
+
+  box.innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div style="font-size:13px;color:var(--accent2);font-weight:800;margin-bottom:10px;">Soru ${step+1} / ${currentLesson.length}</div>
+  `;
+
+  const type = q.type || "test";
+
+  if(type === "test"){
+    const d = q.data || { question:q.question, options:(q.options||"").split(","), answer:q.answer };
+    const options = Array.isArray(d.options) ? d.options : String(d.options||"").split(",");
+    box.innerHTML += `
+      <h2 style="margin:0;line-height:1.4;">${escapeHtml(d.question||"")}</h2>
+      <div class="option-grid">
+        ${options.filter(Boolean).map(o=>`
+          <button class="opt" onclick="answerTest('${escapeJs(o.trim())}','${escapeJs(d.answer||"")}')">${escapeHtml(o.trim())}</button>
+        `).join("")}
+      </div>
+    `;
+    return;
+  }
+
+  if(type === "listening_fill"){
+    const d = q.data || {};
+    box.innerHTML += `
+      <div class="paragraph">${markBlanks(renderParagraphs(d.sentence || ""))}</div>
+      ${d.audioUrl ? `<audio controls style="width:100%;margin-top:14px"><source src="${escapeAttr(d.audioUrl)}"></audio>` : `<div class="small">Audio URL eklenmemiş.</div>`}
+      <div class="hr"></div>
+      <input class="input" id="fillInput" placeholder="Boşluğu doldur...">
+      <button class="opt" style="margin-top:12px" onclick="answerFill('${escapeJs(d.answer||"")}')">Kontrol Et</button>
+      <div class="small">İpucu: büyük/küçük harf önemli değil.</div>
+    `;
+    return;
+  }
+
+  if(type === "drag_fill"){
+    const d = q.data || {};
+    const blanks = (d.sentence||"").split("___").length - 1;
+    dragFillState = { filled: [], blanks: blanks, answer: (d.answer||[]) };
+
+    const words = Array.isArray(d.words) ? d.words : String(d.words||"").split(",").map(x=>x.trim()).filter(Boolean);
+
+    box.innerHTML += `
+      <div class="paragraph">${markBlanks(renderParagraphs(d.sentence || ""))}</div>
+      <div class="small">Aşağıdaki kelimelere tıkla. Tıkladıkça sırayla boşluklara yerleşir.</div>
+      <div class="wordbank" id="wordBank">
+        ${words.map((w,i)=>`<span class="word" id="w_${i}" onclick="pickWord(${i}, '${escapeJs(w)}')">${escapeHtml(w)}</span>`).join("")}
+      </div>
+      <div class="hr"></div>
+      <div id="pickedLine" style="font-weight:900;color:#fff;">Seçilenler: <span style="color:var(--accent2)" id="pickedText">-</span></div>
+      <button class="opt" style="margin-top:12px" onclick="answerDragFill()">Kontrol Et</button>
+    `;
+    return;
+  }
+
+  if(type === "image_match"){
+    const d = q.data || {};
+    const pairs = Array.isArray(d.pairs) ? d.pairs : [];
+    // kelimeleri karıştır
+    const words = pairs.map(p=>p.word);
+    shuffle(words);
+
+    box.innerHTML += `
+      <h2 style="margin:0;line-height:1.4;">Resimleri doğru kelimelerle eşleştir</h2>
+      <div class="small">Her resim için uygun kelimeyi seç.</div>
+      <div class="hr"></div>
+      <div id="matchArea" style="display:grid;gap:14px;margin-top:12px">
+        ${pairs.map((p,idx)=>`
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center">
+            <img src="${escapeAttr(p.img)}" style="width:120px;height:80px;object-fit:cover;border-radius:14px;border:1px solid var(--border)" onerror="this.style.display='none'">
+            <select class="input" id="m_${idx}">
+              <option value="">Seç...</option>
+              ${words.map(w=>`<option value="${escapeAttr(w)}">${escapeHtml(w)}</option>`).join("")}
+            </select>
+          </div>
+        `).join("")}
+      </div>
+      <button class="opt" style="margin-top:14px" onclick="answerImageMatch()">Kontrol Et</button>
+    `;
+    return;
+  }
+
+  box.innerHTML += `<div class="small">Bu soru tipi desteklenmiyor.</div>`;
+}
+
+/* ===== ANSWERS ===== */
+function answerTest(choice, answer){
+  if(String(choice).trim().toLowerCase() === String(answer).trim().toLowerCase()){
+    step++; renderStep();
+  }else{
+    alert("❌ Yanlış. Tekrar dene.");
+  }
+}
+
+function answerFill(answer){
+  const v = (document.getElementById("fillInput")||{}).value || "";
+  if(v.trim().toLowerCase() === String(answer||"").trim().toLowerCase()){
+    step++; renderStep();
+  }else{
+    alert("❌ Yanlış. Tekrar dene.");
+  }
+}
+
+function pickWord(idx, word){
+  if(!dragFillState) return;
+  const wEl = document.getElementById("w_" + idx);
+  if(!wEl || wEl.classList.contains("used")) return;
+
+  dragFillState.filled.push(word);
+  wEl.classList.add("used");
+
+  const txt = dragFillState.filled.length ? dragFillState.filled.join(" • ") : "-";
+  document.getElementById("pickedText").textContent = txt;
+}
+
+function answerDragFill(){
+  if(!dragFillState) return;
+  const filled = dragFillState.filled.map(x=>String(x).trim().toLowerCase());
+  const ans = (dragFillState.answer||[]).map(x=>String(x).trim().toLowerCase());
+
+  if(filled.length !== ans.length){
+    alert("⚠️ Tüm boşlukları doldurmalısın.");
+    return;
+  }
+  const ok = filled.every((v,i)=>v===ans[i]);
+  if(ok){
+    step++; renderStep();
+  }else{
+    alert("❌ Yanlış sıralama. Tekrar dene.");
+  }
+}
+
+function answerImageMatch(){
+  const q = currentLesson[step];
+  const pairs = (q.data && Array.isArray(q.data.pairs)) ? q.data.pairs : [];
+  let ok = true;
+  pairs.forEach((p,idx)=>{
+    const v = (document.getElementById("m_"+idx)||{}).value || "";
+    if(String(v).trim().toLowerCase() !== String(p.word).trim().toLowerCase()) ok = false;
+  });
+  if(ok){
+    step++; renderStep();
+  }else{
+    alert("❌ Eşleştirmeler yanlış. Tekrar dene.");
+  }
+}
+
+/* ===== FINISH ===== */
+function finish(){
+  const done = JSON.parse(localStorage.getItem(DONE_KEY)) || {};
+  if(!done[sessId]) done[sessId] = [];
+  if(!done[sessId].includes(activeKey)){
+    done[sessId].push(activeKey);
+    localStorage.setItem(DONE_KEY, JSON.stringify(done));
+  }
+
+  document.getElementById("mainDisplay").innerHTML = `
+    <div style="text-align:center;padding:40px">
+      <div style="font-size:70px; margin-bottom:20px">🏆</div>
+      <h2 style="color:var(--ok);margin:0">Harika İş!</h2>
+      <p style="color:var(--muted)">Bu bölümü başarıyla tamamladın.</p>
+      <button class="opt" style="margin-top:16px" onclick="location.reload()">Diğer Bölümlere Bak</button>
+    </div>
+  `;
+}
+
+/* ===== UTIL ===== */
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+}
+function escapeHtml(s){
+  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function escapeAttr(s){
+  return String(s||"").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function escapeJs(s){
+  return String(s||"").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll("\n","\\n");
+}
+
+/* ===== START ===== */
+renderSidebar();
+function renderParagraphs(text){
+  if(!text) return "";
+  return text
+    .split("\n\n") // boş satır = paragraf
+    .map(p => `<p>${escapeHtml(p).replace(/\n/g,"<br>")}</p>`)
+    .join("");
+}
+
+function markBlanks(text){
+  let count = 0;
+  return text.replace(/___/g, ()=>{
+    count++;
+    return `<span class="blank">(${count}) ______</span>`;
+  });
+}
+
+</script>
+</body>
+</html>
