@@ -23,29 +23,91 @@ body{
 }
 .app{display:flex;min-height:100vh}
 
-/* SIDEBAR */
+/* SIDEBAR & ACCORDION */
 .drawer{
- width:320px;background:#0f172a;border-right:1px solid var(--border);
- padding:20px;position:sticky;top:0;height:100vh;overflow:auto
+ width:320px;background:rgba(15,23,42,0.95);border-right:1px solid var(--border);
+ padding:20px 15px;position:sticky;top:0;height:100vh;overflow-y:auto;
+ backdrop-filter: blur(10px);
 }
-.unit-title{
- font-size:11px;letter-spacing:1px;text-transform:uppercase;
- color:var(--accent2);margin:15px 0 6px;opacity:.9;font-weight:900
+.drawer::-webkit-scrollbar { width: 5px; }
+.drawer::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* Ünite Grubu */
+.unit-group {
+  margin-bottom: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.02);
+  transition: all 0.3s ease;
 }
-.section-btn{
- width:100%;padding:12px 12px;border-radius:14px;
+
+.unit-header {
+  width: 100%;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  user-select: none;
+}
+.unit-header:hover { background: rgba(255,255,255,0.08); }
+
+.unit-title-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.unit-chevron {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+/* Bölüm Listesi Animasyonu */
+.section-list {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(0,0,0,0.15);
+}
+
+.unit-group.open .section-list {
+  max-height: 800px; /* İçeriğe göre dinamik büyür */
+}
+
+.unit-group.open .unit-chevron {
+  transform: rotate(180deg);
+}
+
+/* Bölüm Butonları */
+.section-btn {
+ width: calc(100% - 20px); margin: 6px 10px;
+ padding:11px 14px; border-radius:12px;
  background:rgba(255,255,255,.04);
- border:1px solid var(--border);color:#fff;
- cursor:pointer;margin-bottom:8px;text-align:left;transition: 0.2s;
+ border:1px solid transparent; color:#fff;
+ cursor:pointer; text-align:left; transition: 0.2s;
  display:flex; justify-content:space-between; align-items:center; gap:10px;
 }
-.section-btn:hover{background:rgba(255,75,75,.12); border-color:rgba(255,255,255,.22)}
-.section-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+.section-btn:hover {
+  background:rgba(255,75,75,.12); 
+  transform: translateX(5px);
+}
+.section-btn.active {
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow: 0 4px 15px rgba(255, 75, 75, 0.3);
+  border-color:transparent;
+}
+
 .badge{
- font-size:11px; font-weight:900;
- padding:4px 10px; border-radius:999px;
- border:1px solid rgba(255,255,255,.14);
- background:rgba(0,0,0,.25); color:var(--muted);
+ font-size:10px; font-weight:900;
+ padding:3px 8px; border-radius:999px;
+ border:1px solid rgba(255,255,255,.1);
+ background:rgba(0,0,0,.3); color:var(--muted);
 }
 .badge.done{border-color:rgba(16,185,129,.35); color:var(--ok); background:rgba(16,185,129,.08)}
 
@@ -70,38 +132,22 @@ body{
 .progress-bar{height:8px;background:rgba(0,0,0,.3);border-radius:999px;overflow:hidden;border:1px solid var(--border);margin-bottom:18px}
 .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:.35s}
 .input{
- width:100%;
- background:rgba(0,0,0,.25);
- border:1px solid var(--border);
- color:#fff;
- padding:12px 12px;
- border-radius:14px;
- outline:none;
+ width:100%; background:rgba(0,0,0,.25); border:1px solid var(--border);
+ color:#fff; padding:12px 12px; border-radius:14px; outline:none;
 }
 .wordbank{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
 .word{
- padding:10px 12px; border-radius:999px;
- border:1px solid var(--border);
- background:rgba(255,255,255,.07);
- cursor:pointer; font-weight:900;
+ padding:10px 12px; border-radius:999px; border:1px solid var(--border);
+ background:rgba(255,255,255,.07); cursor:pointer; font-weight:900;
 }
 .word.used{opacity:.35; pointer-events:none}
 .small{font-size:12px;color:var(--muted);line-height:1.35;margin-top:8px}
 .hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
-.paragraph p{
-  margin-bottom:18px;
-  line-height:1.7;
-  font-size:18px;
-}
-
+.paragraph p{ margin-bottom:18px; line-height:1.7; font-size:18px; }
 .blank{
-  display:inline-block;
-  padding:2px 8px;
-  margin:0 4px;
-  border-bottom:2px solid #ff8a8a;
-  color:#ff8a8a;
-  font-weight:900;
+  display:inline-block; padding:2px 8px; margin:0 4px;
+  border-bottom:2px solid #ff8a8a; color:#ff8a8a; font-weight:900;
 }
 
 </style>
@@ -111,10 +157,10 @@ body{
 <div class="app">
 
   <div class="drawer">
-    <div id="userLvl" style="margin-bottom:14px; font-weight:900; color:var(--accent2); font-size:14px;"></div>
+    <div id="userLvl" style="margin-bottom:18px; font-weight:900; color:var(--accent2); font-size:14px; padding:0 5px;"></div>
     <div id="sidebarMenu"></div>
     <div style="margin-top:20px">
-      <button class="section-btn" style="border-color:rgba(255,75,75,.45); color:#fff; justify-content:center" onclick="location.href='index.html'">🏠 Ana Panel</button>
+      <button class="section-btn" style="border-color:rgba(255,75,75,.3); color:#fff; justify-content:center; width:100%; margin:0;" onclick="location.href='index.html'">🏠 Ana Panel</button>
     </div>
   </div>
 
@@ -123,7 +169,7 @@ body{
       <div style="text-align:center;padding:60px">
         <div style="font-size:60px;margin-bottom:20px">📖</div>
         <h2>Öğrenmeye Başla</h2>
-        <p style="color:var(--muted)">Soldan ünite ve bölümü seç, sonra soruları çöz.</p>
+        <p style="color:var(--muted)">Soldan bir ünite seçerek bölümlere ulaşabilirsin.</p>
       </div>
     </div>
   </div>
@@ -131,39 +177,35 @@ body{
 </div>
 
 <script>
-/* ===== KEYS ===== */
+/* ===== KEYS & DATA ===== */
 const DB_KEY="PRO_DIL_DATA_V6";
 const SESSION_KEY="session_student_id";
 const LEVELS_KEY="student_levels";
 const DONE_KEY="practice_done";
 
-/* ===== LOAD ===== */
 let bank = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 const sessId = localStorage.getItem(SESSION_KEY);
 const levels = JSON.parse(localStorage.getItem(LEVELS_KEY)) || {};
 const userLevel = levels[sessId] || "A1.1";
 
-/* ===== UI ===== */
-document.getElementById("userLvl").textContent = "Mevcut Seviye: " + userLevel;
+document.getElementById("userLvl").textContent = "📍 Seviye: " + userLevel;
 
-/* ===== MENU BUILD (level -> unitTitle -> sectionTitle) ===== */
+/* ===== SIDEBAR RENDER (Accordion Style) ===== */
 function renderSidebar(){
   const menu = document.getElementById("sidebarMenu");
   const done = JSON.parse(localStorage.getItem(DONE_KEY)) || {};
   const myDone = done[sessId] || [];
 
   menu.innerHTML = "";
-
-  // sadece benim seviyem
   const qs = bank.filter(q => (q.level || "") === userLevel);
 
   if(qs.length === 0){
-    menu.innerHTML = `<div style="font-size:12px; color:var(--muted); padding:10px;">Bu seviye için henüz soru eklenmemiş.</div>`;
+    menu.innerHTML = `<div style="font-size:12px; color:var(--muted); padding:10px;">İçerik bulunamadı.</div>`;
     return;
   }
 
-  // group by unit/section titles
-  const map = {}; // unitTitle -> sectionTitle -> [q]
+  // Gruplandırma: unit -> section
+  const map = {};
   qs.forEach(q=>{
     const unit = q.unit || q.unitTitle || "Genel";
     const sec  = q.section || q.sectionTitle || "Alıştırma";
@@ -172,37 +214,56 @@ function renderSidebar(){
     map[unit][sec].push(q);
   });
 
-  // render
-  Object.keys(map).forEach(unit=>{
-    menu.innerHTML += `<div class="unit-title">${escapeHtml(unit)}</div>`;
+  Object.keys(map).forEach((unit, idx)=>{
+    const unitId = `unit_grp_${idx}`;
+    let sectionsHtml = "";
+    
     Object.keys(map[unit]).forEach(sec=>{
       const key = unit + "||" + sec;
       const isDone = myDone.includes(key);
       const count = map[unit][sec].length;
-      menu.innerHTML += `
-        <button class="section-btn ${isDone ? 'completed' : ''}" onclick="loadLesson('${escapeJs(unit)}','${escapeJs(sec)}',this)">
+      sectionsHtml += `
+        <button class="section-btn" onclick="loadLesson('${escapeJs(unit)}','${escapeJs(sec)}',this)">
           <div style="display:flex;gap:8px;align-items:center;">
             <span>${isDone ? '✅' : '📌'}</span>
-            <b>${escapeHtml(sec)}</b>
+            <span>${escapeHtml(sec)}</span>
           </div>
-          <span class="badge ${isDone?'done':''}">${count} soru</span>
+          <span class="badge ${isDone?'done':''}">${count} Soru</span>
         </button>
       `;
     });
+
+    menu.innerHTML += `
+      <div class="unit-group" id="${unitId}">
+        <div class="unit-header" onclick="toggleUnit('${unitId}')">
+          <span class="unit-title-text">${escapeHtml(unit)}</span>
+          <span class="unit-chevron">▼</span>
+        </div>
+        <div class="section-list">
+          ${sectionsHtml}
+        </div>
+      </div>
+    `;
   });
 }
 
-/* ===== PRACTICE STATE ===== */
+function toggleUnit(id) {
+  const el = document.getElementById(id);
+  const isOpen = el.classList.contains('open');
+  // Diğerlerini kapatmak isterseniz alttaki satırı aktif edin:
+  // document.querySelectorAll('.unit-group').forEach(g => g.classList.remove('open'));
+  el.classList.toggle('open', !isOpen);
+}
+
+/* ===== PRACTICE LOGIC ===== */
 let currentLesson = [], step = 0, activeKey = "";
 let dragFillState = null;
 
 function loadLesson(unit, section, btn){
   document.querySelectorAll(".section-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
-
   activeKey = unit + "||" + section;
 
-  // seçilen bölümdeki soruları order’a göre sırala
   currentLesson = bank
     .filter(q => (q.level||"")===userLevel && (q.unit||"")===unit && (q.section||"")===section)
     .slice()
@@ -237,57 +298,38 @@ function renderStep(){
         `).join("")}
       </div>
     `;
-    return;
-  }
-
-  if(type === "listening_fill"){
+  } else if(type === "listening_fill"){
     const d = q.data || {};
     box.innerHTML += `
       <div class="paragraph">${markBlanks(renderParagraphs(d.sentence || ""))}</div>
-      ${d.audioUrl ? `<audio controls style="width:100%;margin-top:14px"><source src="${escapeAttr(d.audioUrl)}"></audio>` : `<div class="small">Audio URL eklenmemiş.</div>`}
+      ${d.audioUrl ? `<audio controls style="width:100%;margin-top:14px"><source src="${escapeAttr(d.audioUrl)}"></audio>` : `<div class="small">Ses dosyası yok.</div>`}
       <div class="hr"></div>
-      <input class="input" id="fillInput" placeholder="Boşluğu doldur...">
-      <button class="opt" style="margin-top:12px" onclick="answerFill('${escapeJs(d.answer||"")}')">Kontrol Et</button>
-      <div class="small">İpucu: büyük/küçük harf önemli değil.</div>
+      <input class="input" id="fillInput" placeholder="Cevabı yazın...">
+      <button class="opt" style="margin-top:12px; text-align:center" onclick="answerFill('${escapeJs(d.answer||"")}')">Kontrol Et</button>
     `;
-    return;
-  }
-
-  if(type === "drag_fill"){
+  } else if(type === "drag_fill"){
     const d = q.data || {};
-    const blanks = (d.sentence||"").split("___").length - 1;
-    dragFillState = { filled: [], blanks: blanks, answer: (d.answer||[]) };
-
+    dragFillState = { filled: [], blanks: (d.sentence||"").split("___").length - 1, answer: (d.answer||[]) };
     const words = Array.isArray(d.words) ? d.words : String(d.words||"").split(",").map(x=>x.trim()).filter(Boolean);
-
     box.innerHTML += `
       <div class="paragraph">${markBlanks(renderParagraphs(d.sentence || ""))}</div>
-      <div class="small">Aşağıdaki kelimelere tıkla. Tıkladıkça sırayla boşluklara yerleşir.</div>
-      <div class="wordbank" id="wordBank">
+      <div class="wordbank">
         ${words.map((w,i)=>`<span class="word" id="w_${i}" onclick="pickWord(${i}, '${escapeJs(w)}')">${escapeHtml(w)}</span>`).join("")}
       </div>
       <div class="hr"></div>
-      <div id="pickedLine" style="font-weight:900;color:#fff;">Seçilenler: <span style="color:var(--accent2)" id="pickedText">-</span></div>
-      <button class="opt" style="margin-top:12px" onclick="answerDragFill()">Kontrol Et</button>
+      <div id="pickedLine" style="font-weight:900;">Seçilen: <span style="color:var(--accent2)" id="pickedText">-</span></div>
+      <button class="opt" style="margin-top:12px; text-align:center" onclick="answerDragFill()">Kontrol Et</button>
     `;
-    return;
-  }
-
-  if(type === "image_match"){
+  } else if(type === "image_match"){
     const d = q.data || {};
     const pairs = Array.isArray(d.pairs) ? d.pairs : [];
-    // kelimeleri karıştır
-    const words = pairs.map(p=>p.word);
-    shuffle(words);
-
+    const words = pairs.map(p=>p.word); shuffle(words);
     box.innerHTML += `
-      <h2 style="margin:0;line-height:1.4;">Resimleri doğru kelimelerle eşleştir</h2>
-      <div class="small">Her resim için uygun kelimeyi seç.</div>
-      <div class="hr"></div>
+      <h2 style="margin:0;line-height:1.4;">Resimleri Eşleştir</h2>
       <div id="matchArea" style="display:grid;gap:14px;margin-top:12px">
         ${pairs.map((p,idx)=>`
           <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center">
-            <img src="${escapeAttr(p.img)}" style="width:120px;height:80px;object-fit:cover;border-radius:14px;border:1px solid var(--border)" onerror="this.style.display='none'">
+            <img src="${escapeAttr(p.img)}" style="width:120px;height:80px;object-fit:cover;border-radius:14px;border:1px solid var(--border)">
             <select class="input" id="m_${idx}">
               <option value="">Seç...</option>
               ${words.map(w=>`<option value="${escapeAttr(w)}">${escapeHtml(w)}</option>`).join("")}
@@ -295,130 +337,65 @@ function renderStep(){
           </div>
         `).join("")}
       </div>
-      <button class="opt" style="margin-top:14px" onclick="answerImageMatch()">Kontrol Et</button>
+      <button class="opt" style="margin-top:14px; text-align:center" onclick="answerImageMatch()">Kontrol Et</button>
     `;
-    return;
   }
-
-  box.innerHTML += `<div class="small">Bu soru tipi desteklenmiyor.</div>`;
 }
 
-/* ===== ANSWERS ===== */
+/* ===== UTILS & HANDLERS ===== */
 function answerTest(choice, answer){
-  if(String(choice).trim().toLowerCase() === String(answer).trim().toLowerCase()){
-    step++; renderStep();
-  }else{
-    alert("❌ Yanlış. Tekrar dene.");
-  }
+  if(String(choice).trim().toLowerCase() === String(answer).trim().toLowerCase()){ step++; renderStep(); }
+  else alert("❌ Yanlış. Tekrar dene.");
 }
-
 function answerFill(answer){
   const v = (document.getElementById("fillInput")||{}).value || "";
-  if(v.trim().toLowerCase() === String(answer||"").trim().toLowerCase()){
-    step++; renderStep();
-  }else{
-    alert("❌ Yanlış. Tekrar dene.");
-  }
+  if(v.trim().toLowerCase() === String(answer||"").trim().toLowerCase()){ step++; renderStep(); }
+  else alert("❌ Yanlış. Tekrar dene.");
 }
-
 function pickWord(idx, word){
   if(!dragFillState) return;
   const wEl = document.getElementById("w_" + idx);
   if(!wEl || wEl.classList.contains("used")) return;
-
   dragFillState.filled.push(word);
   wEl.classList.add("used");
-
-  const txt = dragFillState.filled.length ? dragFillState.filled.join(" • ") : "-";
-  document.getElementById("pickedText").textContent = txt;
+  document.getElementById("pickedText").textContent = dragFillState.filled.join(" • ");
 }
-
 function answerDragFill(){
   if(!dragFillState) return;
-  const filled = dragFillState.filled.map(x=>String(x).trim().toLowerCase());
-  const ans = (dragFillState.answer||[]).map(x=>String(x).trim().toLowerCase());
-
-  if(filled.length !== ans.length){
-    alert("⚠️ Tüm boşlukları doldurmalısın.");
-    return;
-  }
-  const ok = filled.every((v,i)=>v===ans[i]);
-  if(ok){
-    step++; renderStep();
-  }else{
-    alert("❌ Yanlış sıralama. Tekrar dene.");
-  }
+  if(dragFillState.filled.length !== dragFillState.answer.length){ alert("⚠️ Boşlukları doldurmalısın."); return; }
+  const ok = dragFillState.filled.every((v,i)=>v.toLowerCase().trim() === dragFillState.answer[i].toLowerCase().trim());
+  if(ok){ step++; renderStep(); } else { alert("❌ Hatalı sıralama!"); location.reload(); }
 }
-
 function answerImageMatch(){
-  const q = currentLesson[step];
-  const pairs = (q.data && Array.isArray(q.data.pairs)) ? q.data.pairs : [];
+  const pairs = (currentLesson[step].data.pairs) || [];
   let ok = true;
   pairs.forEach((p,idx)=>{
     const v = (document.getElementById("m_"+idx)||{}).value || "";
-    if(String(v).trim().toLowerCase() !== String(p.word).trim().toLowerCase()) ok = false;
+    if(v.toLowerCase().trim() !== p.word.toLowerCase().trim()) ok = false;
   });
-  if(ok){
-    step++; renderStep();
-  }else{
-    alert("❌ Eşleştirmeler yanlış. Tekrar dene.");
-  }
+  if(ok){ step++; renderStep(); } else alert("❌ Eşleştirmeler yanlış.");
 }
-
-/* ===== FINISH ===== */
 function finish(){
   const done = JSON.parse(localStorage.getItem(DONE_KEY)) || {};
   if(!done[sessId]) done[sessId] = [];
-  if(!done[sessId].includes(activeKey)){
-    done[sessId].push(activeKey);
-    localStorage.setItem(DONE_KEY, JSON.stringify(done));
-  }
-
+  if(!done[sessId].includes(activeKey)){ done[sessId].push(activeKey); localStorage.setItem(DONE_KEY, JSON.stringify(done)); }
   document.getElementById("mainDisplay").innerHTML = `
     <div style="text-align:center;padding:40px">
       <div style="font-size:70px; margin-bottom:20px">🏆</div>
       <h2 style="color:var(--ok);margin:0">Harika İş!</h2>
-      <p style="color:var(--muted)">Bu bölümü başarıyla tamamladın.</p>
-      <button class="opt" style="margin-top:16px" onclick="location.reload()">Diğer Bölümlere Bak</button>
+      <p style="color:var(--muted)">Bölümü başarıyla tamamladın.</p>
+      <button class="opt" style="margin-top:16px; text-align:center" onclick="location.reload()">Diğer Bölümlere Bak</button>
     </div>
   `;
 }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } }
+function escapeHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function escapeAttr(s){ return String(s||"").replace(/"/g,"&quot;"); }
+function escapeJs(s){ return String(s||"").replace(/'/g,"\\'"); }
+function renderParagraphs(text){ return text.split("\n\n").map(p => `<p>${escapeHtml(p)}</p>`).join(""); }
+function markBlanks(text){ let c=0; return text.replace(/___/g, ()=>{ c++; return `<span class="blank">(${c}) ____</span>`; }); }
 
-/* ===== UTIL ===== */
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-}
-function escapeHtml(s){
-  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
-function escapeAttr(s){
-  return String(s||"").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
-function escapeJs(s){
-  return String(s||"").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll("\n","\\n");
-}
-
-/* ===== START ===== */
 renderSidebar();
-function renderParagraphs(text){
-  if(!text) return "";
-  return text
-    .split("\n\n") // boş satır = paragraf
-    .map(p => `<p>${escapeHtml(p).replace(/\n/g,"<br>")}</p>`)
-    .join("");
-}
-
-function markBlanks(text){
-  let count = 0;
-  return text.replace(/___/g, ()=>{
-    count++;
-    return `<span class="blank">(${count}) ______</span>`;
-  });
-}
-
 </script>
 </body>
 </html>
