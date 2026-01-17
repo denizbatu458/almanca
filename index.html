@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Deutsch Lernen | Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{ --bg1:#161d3f; --bg2:#101633; --panel:rgba(255,255,255,.06); --card:rgba(255,255,255,.08); --text:#f5f7ff; --muted:#c7d0ff; --border:rgba(255,255,255,.16); --neon:#ff4b4b; --neon2:#ff8a8a; --ok:#4be38a; }
+*{box-sizing:border-box}
+body{ margin:0; font-family:Inter,sans-serif; background: radial-gradient(900px 600px at 15% 15%, rgba(255,60,60,.45), transparent 60%), linear-gradient(180deg,#1a1022,#12081a); color:var(--text); min-height: 100vh; }
+.login{min-height:100vh; display:flex; align-items:center; justify-content:center;}
+.login .card{width:380px; background:var(--card); padding:28px; border-radius:22px; border:1px solid var(--border); backdrop-filter: blur(10px);}
+input{width:100%; padding:12px; margin-top:10px; border-radius:14px; border:1px solid var(--border); background:rgba(10,14,34,.55); color:#fff; outline: none;}
+.login button{width:100%; margin-top:16px; padding:12px; border-radius:14px; border:none; background:linear-gradient(135deg,var(--neon),var(--neon2)); color:#fff; font-weight:800; cursor:pointer;}
+.app{display:none}
+header{display:flex; justify-content:space-between; align-items:center; padding:18px 22px; background:var(--panel); border-bottom:1px solid var(--border); backdrop-filter: blur(10px);}
+.hero{max-width:900px; margin:34px auto 30px; text-align:center; padding:0 14px;}
+.progressWrap{max-width:460px; margin:18px auto 0;}
+.level-labels { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 800; font-size: 14px; }
+.lvl-badge { background: rgba(255,75,75,0.15); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--neon); color: var(--neon); }
+.lvl-target { color: var(--muted); padding: 4px 10px; }
+.progressBar{height:14px; background:rgba(10,14,34,.55); border-radius:999px; overflow:hidden; border:1px solid var(--border); position: relative;}
+.progressFill{width:0%; height:100%; background:linear-gradient(90deg,var(--neon),var(--neon2)); transition: 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); box-shadow: 0 0 15px var(--neon);}
+.container{max-width:1020px; margin:28px auto 70px; padding:0 18px;}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px;}
+.cardLink{ position: relative; background:var(--card); padding:28px; border-radius:24px; border:1px solid var(--border); text-decoration:none; color:var(--text); text-align:center; transition:.35s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cardLink:hover{transform:translateY(-8px); border-color:var(--neon); background: rgba(255,255,255,0.12);}
+.notif-badge{ position:absolute; top:15px; right:15px; background:var(--neon); color:#fff; min-width:22px; height:22px; border-radius:11px; display:none; align-items:center; justify-content:center; font-size:11px; font-weight:800; }
+.fabRow{position:fixed; right:18px; bottom:18px; display:flex; gap:10px; z-index:99;}
+.fab{padding:12px 25px; border-radius:999px; background:var(--panel); border:1px solid var(--border); color:var(--text); cursor:pointer; backdrop-filter: blur(10px); font-weight: 600;}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <div class="card">
+    <h2 style="margin:0">Willkommen!</h2>
+    <input id="u" placeholder="Kullanıcı adı">
+    <input id="p" type="password" placeholder="Şifre">
+    <div id="err" style="color:var(--neon); margin-top:10px; font-size:14px;"></div>
+    <button onclick="login()">Giriş Yap</button>
+  </div>
+</div>
+
+<div class="app" id="app">
+<header>
+  <div><strong id="welcome" style="font-size:18px">Hoşgeldin</strong></div>
+  <div id="adminBadge" style="display:none; color:var(--ok); font-weight:800; border:1px solid var(--ok); padding:4px 10px; border-radius:8px; font-size:11px;">YÖNETİCİ</div>
+</header>
+
+<div class="focus-box" id="focusBox" style="display:none; max-width:700px; margin:20px auto; padding:18px 22px; border-radius:18px; background:rgba(255,255,255,.08); border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+  <div>
+    <strong>Bugün Devam Edelim 👇</strong><br>
+    <span id="focusText" style="font-size:13px;color:var(--muted)">-</span>
+  </div>
+  <button onclick="location.href='alistirma.html'" style="padding:10px 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--neon),var(--neon2));color:#fff;font-weight:800;cursor:pointer">
+    Devam Et →
+  </button>
+</div>
+
+<section class="hero" id="heroArea">
+  <div class="progressWrap">
+    <div class="level-labels">
+      <span id="currentLevelLabel" class="lvl-badge">---</span>
+      <span id="nextLevelLabel" class="lvl-target">---</span>
+    </div>
+    <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+    <div style="color:var(--muted);font-size:13px;margin-top:8px; font-weight:600;" id="progressText">%0 Tamamlandı</div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="cards">
+    <a href="dersler.html" class="cardLink"><span>📘</span> <strong>Dersler</strong></a>
+    <a href="alistirma.html" class="cardLink"><span>✏️</span> <strong>Alıştırmalar</strong></a>
+    <a href="diziler.html" class="cardLink"><span>🎬</span> <strong>Diziler</strong></a>
+    <a href="analiz.html" class="cardLink"><span>📊</span> <strong>Analiz</strong></a>
+    <a href="asistan.html" class="cardLink"><span>🤖</span> <strong>Asistan</strong></a>
+    <a href="oyunlar.html" class="cardLink"><span>🎮</span> <strong>Oyunlar</strong></a>
+    <a href="mesaj.html" class="cardLink"><span>✉️</span> <strong>Mesajlar</strong>
+      <div id="msgNotif" class="notif-badge">0</div>
+    </a>
+    
+    <a href="admin.html" id="adminLink" class="cardLink" style="display:none; border-color:var(--ok)">
+      <span>⚙️</span> <strong>Öğrenci Yönetimi</strong>
+    </a>
+    <a href="admin-questions.html" id="qAdminLink" class="cardLink" style="display:none; border-color:var(--ok)">
+      <span>📝</span> <strong>Soru Yönetimi</strong>
+    </a>
+    <a href="admin-lessons.html" id="lAdminLink" class="cardLink" style="display:none; border-color:var(--ok)">
+      <span>📚</span> <strong>Ders Yönetimi</strong>
+    </a>
+    <a href="admin-analiz.html" id="aAdminLink" class="cardLink" style="display:none; border-color:var(--ok)">
+      <span>📊</span> <strong>Analiz Merkezi</strong>
+    </a>
+  </div>
+</div>
+
+<div class="fabRow">
+  <button class="fab" onclick="logout()" style="background:rgba(255,75,75,0.1); border-color:var(--neon)">Çıkış Yap</button>
+</div>
+</div>
+
+<script>
+const KEY_STUDENTS="students_v2", KEY_SESSION="session_student_id", KEY_REPLIES="teacher_replies", KEY_DONE="practice_done", KEY_MSG="student_messages", KEY_LEVELS="student_levels", KEY_RESULTS="practice_results";
+const LEVELS = ["A1.1", "A1.2", "A2.1", "A2.2", "B1.1", "B1.2", "B1.3", "B2.1", "B2.2", "B2.3", "C1.1", "C1.2", "C1.3", "C2"];
+
+function login(){
+  const u=document.getElementById("u").value.trim().toLowerCase();
+  const p=document.getElementById("p").value.trim();
+  if(u === "penumbra" && p === "1145") { localStorage.setItem(KEY_SESSION, "admin"); location.reload(); return; }
+  const students = JSON.parse(localStorage.getItem(KEY_STUDENTS)) || [];
+  const s = students.find(x => x.username === u && x.password === p);
+  if(!s){ document.getElementById("err").textContent="Kullanıcı adı veya şifre hatalı!"; return; }
+  localStorage.setItem(KEY_SESSION, s.id); location.reload();
+}
+
+function checkSession(){
+  const sess = localStorage.getItem(KEY_SESSION);
+  if(!sess) return;
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  
+  if(sess === "admin") {
+    document.getElementById("welcome").textContent = "Master Admin Paneli";
+    document.getElementById("adminBadge").style.display = "block";
+    
+    // Admin Panellerini Aktif Et
+    document.getElementById("adminLink").style.display = "flex";
+    document.getElementById("qAdminLink").style.display = "flex";
+    document.getElementById("lAdminLink").style.display = "flex";
+    document.getElementById("aAdminLink").style.display = "flex"; // Analiz Merkezi
+    
+    document.getElementById("heroArea").style.display = "none";
+  } else {
+    const students = JSON.parse(localStorage.getItem(KEY_STUDENTS)) || [];
+    const s = students.find(x => String(x.id) === String(sess));
+    if(s) {
+      document.getElementById("welcome").textContent = "Hoşgeldin, " + s.name;
+      updateProgress(s.id);
+      checkNewMessages(s.id);
+    }
+  }
+}
+
+function updateProgress(studentId) {
+  const doneData = JSON.parse(localStorage.getItem(KEY_DONE)) || {}; 
+  const results = JSON.parse(localStorage.getItem(KEY_RESULTS)) || []; 
+  const levels = JSON.parse(localStorage.getItem(KEY_LEVELS)) || {};
+  
+  const myDone = doneData[studentId] || [];
+  const myResults = results.filter(r => String(r.studentId) === String(studentId));
+  const currentLvl = levels[studentId] || "A1.1";
+
+  let lessonPoints = myDone.length * 10;
+  let practicePoints = myResults.filter(r => r.correct).length * 2;
+  let total = Math.min(lessonPoints + practicePoints, 100);
+
+  const currentIndex = LEVELS.indexOf(currentLvl);
+  document.getElementById("currentLevelLabel").textContent = currentLvl;
+  document.getElementById("nextLevelLabel").textContent = LEVELS[currentIndex + 1] || "MAX";
+  document.getElementById("progressFill").style.width = total + "%";
+  document.getElementById("progressText").textContent = "%" + total + " Tamamlandı";
+
+  if(total >= 100) {
+    const NOTIF_SENT_KEY = "notif_sent_" + studentId + "_" + currentLvl;
+    if(!localStorage.getItem(NOTIF_SENT_KEY)) {
+      let msgs = JSON.parse(localStorage.getItem(KEY_MSG)) || [];
+      msgs.push({ 
+        studentId: studentId, 
+        text: `🚩 SEVİYE ONAYI: Barım %100 oldu. ${currentLvl} seviyesini bitirdim, üst seviye onayı bekliyorum!`, 
+        date: new Date().toLocaleString(), 
+        isAuto: true 
+      });
+      localStorage.setItem(KEY_MSG, JSON.stringify(msgs));
+      localStorage.setItem(NOTIF_SENT_KEY, "true");
+      alert("Tebrikler! Bar %100 doldu. Öğretmenine onay bildirimi gönderildi.");
+    }
+  }
+}
+
+function checkNewMessages(studentId) {
+  const replies = JSON.parse(localStorage.getItem(KEY_REPLIES)) || [];
+  const unread = replies.filter(r => String(r.studentId) === String(studentId) && !r.read);
+  if(unread.length > 0) {
+    document.getElementById("msgNotif").style.display = "flex";
+    document.getElementById("msgNotif").textContent = unread.length;
+  }
+}
+
+function logout(){ localStorage.removeItem(KEY_SESSION); location.reload(); }
+checkSession();
+
+(function(){
+  const sess = localStorage.getItem("session_student_id");
+  if(!sess || sess === "admin") return;
+  const doneData = JSON.parse(localStorage.getItem("practice_done")) || {};
+  const myDone = doneData[sess] || [];
+  if(myDone.length === 0) return;
+  const last = myDone[myDone.length - 1]; 
+  const box = document.getElementById("focusBox");
+  const txt = document.getElementById("focusText");
+  if(box && txt){
+    box.style.display = "flex";
+    txt.textContent = last.replace("||", " • ");
+  }
+})();
+</script>
+<style>
+/* === GÖRSEL İYİLEŞTİRME (SİSTEME DOKUNMAZ) === */
+
+/* arka planı daha derin gösterir */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,75,75,.18), transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(255,138,138,.14), transparent 45%);
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* kartlara elit glow */
+.cardLink{
+  box-shadow:0 0 0 rgba(0,0,0,0);
+}
+.cardLink:hover{
+  box-shadow:
+    0 0 25px rgba(255,75,75,.35),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+}
+
+/* kart cam hissi */
+.cardLink::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    120deg,
+    transparent 35%,
+    rgba(255,255,255,.18),
+    transparent 65%
+  );
+  opacity:0;
+  transition:.4s;
+}
+.cardLink:hover::after{
+  opacity:1;
+}
+
+/* progress bar daha premium */
+.progressFill{
+  box-shadow:
+    0 0 18px rgba(255,75,75,.6),
+    inset 0 0 6px rgba(255,255,255,.4);
+}
+
+
+.shooting-star{
+  position:fixed;
+  top:-10%;
+  left:-10%;
+  width:120px;
+  height:2px;
+  background:linear-gradient(90deg,
+    rgba(255,255,255,0),
+    rgba(255,255,255,.9),
+    rgba(255,255,255,0)
+  );
+  opacity:0;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.8));
+  transform:rotate(-20deg);
+  z-index:0;
+  pointer-events:none;
+}
+
+@keyframes shoot{
+  0%{
+    transform:translate(-200px,-200px) rotate(-20deg);
+    opacity:0;
+  }
+  10%{opacity:1}
+  100%{
+    transform:translate(140vw,140vh) rotate(-20deg);
+    opacity:0;
+  }
+}
+
+
+
+
+</style>
+
+<script>
+/* mouse ışık efekti – sayfa dönmez */
+const glow=document.createElement("div");
+glow.style.cssText=`
+ position:fixed;
+ width:220px;height:220px;
+ border-radius:50%;
+ background:radial-gradient(circle, rgba(255,75,75,.25), transparent 60%);
+ pointer-events:none;
+ filter:blur(35px);
+ z-index:0;
+ transform:translate(-50%,-50%);
+`;
+document.body.appendChild(glow);
+
+document.addEventListener("mousemove",e=>{
+ glow.style.left=e.clientX+"px";
+ glow.style.top=e.clientY+"px";
+});
+
+
+setInterval(()=>{
+  const star=document.createElement("div");
+  star.className="shooting-star";
+
+  const startX=Math.random()*window.innerWidth;
+  const delay=Math.random()*2000;
+
+  star.style.left=startX+"px";
+  star.style.top="-50px";
+  star.style.animation=`shoot 1.2s ease-out ${delay}ms`;
+
+  document.body.appendChild(star);
+
+  setTimeout(()=>star.remove(),2000);
+},4500);
+
+
+const THEME_KEY="user_theme_colors";
+
+function toggleThemePanel(){
+  const p=document.getElementById("themePanel");
+  p.style.display=p.style.display==="flex"?"none":"flex";
+}
+
+function applyTheme(colors){
+  if(!colors) return;
+  document.documentElement.style.setProperty("--neon", colors.primary);
+  document.documentElement.style.setProperty("--neon2", colors.secondary);
+}
+
+function saveTheme(colors){
+  localStorage.setItem(THEME_KEY, JSON.stringify(colors));
+}
+
+/* yükle */
+(function(){
+  const saved=JSON.parse(localStorage.getItem(THEME_KEY));
+  if(saved){
+    applyTheme(saved);
+    document.getElementById("primaryColor").value=saved.primary;
+    document.getElementById("secondaryColor").value=saved.secondary;
+  }else{
+    document.getElementById("primaryColor").value="#ff4b4b";
+    document.getElementById("secondaryColor").value="#ff8a8a";
+  }
+})();
+
+/* değişince uygula */
+document.getElementById("primaryColor").addEventListener("input",e=>{
+  const colors={
+    primary:e.target.value,
+    secondary:document.getElementById("secondaryColor").value
+  };
+  applyTheme(colors);
+  saveTheme(colors);
+});
+
+document.getElementById("secondaryColor").addEventListener("input",e=>{
+  const colors={
+    primary:document.getElementById("primaryColor").value,
+    secondary:e.target.value
+  };
+  applyTheme(colors);
+  saveTheme(colors);
+});
+
+
+
+
+
+</script>
+
+</body>
+</html>
